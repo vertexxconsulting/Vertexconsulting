@@ -197,10 +197,6 @@ export default function WhatsAppPanel() {
       {/* INFO */}
       <div className="whatsapp-panel__section">
         <h3>Conexão WhatsApp</h3>
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', fontSize: '0.82rem', color: 'var(--text-dim)', marginBottom: 16 }}>
-          <span>Instância: <strong style={{ color: 'var(--text-bright)' }}>{config.instanceName}</strong></span>
-          <span>API: <strong style={{ color: 'var(--text-bright)' }}>{config.apiUrl}</strong></span>
-        </div>
 
         {/* STATUS INDICATOR */}
         {status && (

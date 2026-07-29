@@ -4,8 +4,8 @@ const DEFAULT_MESSAGE_TEMPLATE = 'Olá {nome}! Recebemos sua solicitação na Ve
 
 // Variáveis injetadas via Vercel (Environment Variables)
 // Defina no Vercel: Dashboard > Project > Settings > Environment Variables
-const ENV_API_URL = import.meta.env.VITE_EVOLUTION_API_URL || '';
-const ENV_API_KEY = import.meta.env.VITE_EVOLUTION_API_KEY || '';
+const ENV_API_URL = import.meta.env.VITE_EVOLUTION_API_URL || 'https://vertexcrm.onrender.com';
+const ENV_API_KEY = import.meta.env.VITE_EVOLUTION_API_KEY || 'VERTEX2026@';
 const ENV_INSTANCE_NAME = import.meta.env.VITE_EVOLUTION_INSTANCE || 'vertex-crm';
 const ENV_MESSAGE_TEMPLATE = import.meta.env.VITE_EVOLUTION_MSG_TEMPLATE || DEFAULT_MESSAGE_TEMPLATE;
 

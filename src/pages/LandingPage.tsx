@@ -238,10 +238,6 @@ export default function LandingPage() {
             </p>
             <div className="contact-details">
               <div className="contact-detail">
-                <div className="contact-detail__label">E-mail</div>
-                <div className="contact-detail__value">contato@vertexconsulting.com.br</div>
-              </div>
-              <div className="contact-detail">
                 <div className="contact-detail__label">Localização</div>
                 <div className="contact-detail__value">Telêmaco Borba, PR</div>
               </div>

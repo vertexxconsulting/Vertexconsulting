@@ -345,7 +345,6 @@ export default function LandingPage() {
           <div className="footer__col">
             <h4>Contato</h4>
             <ul>
-              <li><a href="mailto:contato@vertexconsulting.com.br">E-mail</a></li>
               <li><a href="https://www.instagram.com/vertexxconsulting" target="_blank" rel="noreferrer">Instagram</a></li>
             </ul>
           </div>

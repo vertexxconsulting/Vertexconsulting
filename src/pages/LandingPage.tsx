@@ -130,22 +130,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="stats anim">
-        <div className="stats__inner">
-          {[
-            { num: '150+', label: 'Projetos Entregues' },
-            { num: '98%', label: 'Clientes Satisfeitos' },
-            { num: '5+', label: 'Anos de Experiência' },
-            { num: '50+', label: 'Empresas Atendidas' },
-          ].map((s) => (
-            <div key={s.label} className="stats__item">
-              <div className="stats__num">{s.num}</div>
-              <div className="stats__label">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+
 
       {/* Services */}
       <section id="services" className="section">
@@ -253,10 +238,6 @@ export default function LandingPage() {
             </p>
             <div className="contact-details">
               <div className="contact-detail">
-                <div className="contact-detail__label">E-mail</div>
-                <div className="contact-detail__value">contato@vertexconsulting.com.br</div>
-              </div>
-              <div className="contact-detail">
                 <div className="contact-detail__label">Localização</div>
                 <div className="contact-detail__value">Telêmaco Borba, PR</div>
               </div>
@@ -360,8 +341,7 @@ export default function LandingPage() {
           <div className="footer__col">
             <h4>Contato</h4>
             <ul>
-              <li><a href="mailto:contato@vertexconsulting.com.br">E-mail</a></li>
-              <li><a href="https://instagram.com/anderson_alvesoficial" target="_blank" rel="noreferrer">Instagram</a></li>
+              <li><a href="https://www.instagram.com/vertexxconsulting" target="_blank" rel="noreferrer">Instagram</a></li>
             </ul>
           </div>
         </div>

@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../services/supabaseClient';
 import Sidebar from '../components/crm/Sidebar';
 import Dashboard from '../components/crm/Dashboard';
 import Contacts from '../components/crm/Contacts';
@@ -9,6 +11,12 @@ import './CRMApp.css';
 export default function CRMApp() {
   const [currentView, setCurrentView] = useState<View>(Views.Dashboard);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/crm/login');
+  };
 
   const renderView = useCallback(() => {
     switch (currentView) {
@@ -41,7 +49,10 @@ export default function CRMApp() {
             <span /><span /><span />
           </button>
           <h1 className="crm__title">{currentView}</h1>
-          <a href="/" className="crm__back-link">Voltar ao site</a>
+          <div className="crm__header-actions">
+            <a href="/" className="crm__back-link">Voltar ao site</a>
+            <button className="crm__logout-btn" onClick={handleLogout}>Sair</button>
+          </div>
         </header>
         <main className="crm__content">
           {renderView()}

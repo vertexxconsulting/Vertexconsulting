@@ -11,9 +11,7 @@ import type { ConnectionState } from '../../types';
 
 const DEFAULT_TEMPLATE = 'Olá {nome}! Recebemos sua solicitação na Vertex Consulting. Nossa equipe entrará em contato em breve. Obrigado!';
 
-type Step = 'config' | 'instance' | 'qr' | 'connected';
-
-const statusConfig = {
+const statusConfig: Record<string, { label: string; cor: string; bg: string }> = {
   open: { label: 'Online', cor: '#22c55e', bg: 'rgba(34,197,94,0.15)' },
   close: { label: 'Offline', cor: '#ef4444', bg: 'rgba(239,68,68,0.15)' },
   connecting: { label: 'Conectando', cor: '#eab308', bg: 'rgba(234,179,8,0.15)' },
@@ -23,9 +21,8 @@ export default function WhatsAppPanel() {
   const config = getEvolutionConfig();
   const isConfigured = !!config.apiUrl && !!config.apiKey && !!config.instanceName;
 
-  const [step, setStep] = useState<Step>('config');
-  const [instanceCreated, setInstanceCreated] = useState(false);
   const [connectionState, setConnectionState] = useState<ConnectionState | null>(null);
+  const [instanceExists, setInstanceExists] = useState(false);
   const [qrBase64, setQrBase64] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
@@ -36,57 +33,68 @@ export default function WhatsAppPanel() {
   const [templateSaved, setTemplateSaved] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Auto-check connection on mount if configured
-  useEffect(() => {
-    if (!isConfigured) {
-      setStep('config');
-      return;
-    }
-    checkConnection();
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const status = connectionState?.state
+    ? (statusConfig[connectionState.state] ?? { label: 'Desconhecido', cor: '#888', bg: 'rgba(136,136,136,0.15)' })
+    : null;
 
-  const checkConnection = async () => {
-    if (!isConfigured) return;
+  const clearPolling = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  const fetchState = async () => {
     try {
       const state = await getConnectionState(config.instanceName);
       setConnectionState(state);
       setError('');
+
       if (state.state === 'open') {
-        setStep('connected');
-        setInstanceCreated(true);
+        setInstanceExists(true);
         setQrBase64(null);
-        setStatusMsg('WhatsApp conectado com sucesso.');
+        setStatusMsg('✅ WhatsApp conectado com sucesso!');
+        clearPolling();
       } else if (state.state === 'close') {
-        // Instance exists but disconnected
-        setStep('qr');
-        setInstanceCreated(true);
-        setStatusMsg('Instância existe mas desconectada. Clique em "Conectar" para gerar o QR Code.');
+        setInstanceExists(true);
+        setQrBase64(null);
+        setStatusMsg('⚠️ WhatsApp desconectado. Conecte novamente.');
+        clearPolling();
       } else {
-        setStep('instance');
-        setInstanceCreated(true);
-        setStatusMsg('Instância criada. Clique em "Conectar".');
+        // connecting — instância existe mas ainda não pareou
+        setInstanceExists(true);
+        setStatusMsg('');
       }
+      return state;
     } catch {
       setConnectionState(null);
-      setInstanceCreated(false);
-      setStep('instance');
+      setInstanceExists(false);
+      setQrBase64(null);
       setStatusMsg('');
+      setError('');
+      return null;
     }
   };
 
-  const handleCreateInstance = async () => {
+  // On mount: check connection immediately, then poll every 7s
+  useEffect(() => {
     if (!isConfigured) return;
+    fetchState();
+    intervalRef.current = setInterval(fetchState, 7000);
+    return () => clearPolling();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleCreateInstance = async () => {
     setLoading(true);
     setError('');
     try {
       await createInstance(config.instanceName);
-      setInstanceCreated(true);
-      setStep('qr');
-      setStatusMsg('✅ Instância criada com sucesso! Clique em "Conectar" para gerar o QR Code.');
+      setInstanceExists(true);
+      setStatusMsg('✅ Instância criada! Conecte o QR Code.');
+      // Start polling to detect state changes
+      clearPolling();
+      intervalRef.current = setInterval(fetchState, 7000);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Erro ao criar instância';
       setError(msg);
@@ -96,7 +104,6 @@ export default function WhatsAppPanel() {
   };
 
   const handleConnect = async () => {
-    if (!isConfigured) return;
     setLoading(true);
     setError('');
     setQrBase64(null);
@@ -105,9 +112,11 @@ export default function WhatsAppPanel() {
       const response = await connectInstance(config.instanceName);
       if (response.base64) {
         setQrBase64(response.base64);
-        setStep('qr');
+        setInstanceExists(true);
         setStatusMsg('📱 Escaneie o QR Code com o WhatsApp do número que deseja conectar.');
-        startPolling();
+        // Poll while waiting for scan
+        clearPolling();
+        intervalRef.current = setInterval(fetchState, 5000);
       } else {
         setStatusMsg('Aguardando QR Code...');
       }
@@ -119,34 +128,17 @@ export default function WhatsAppPanel() {
     }
   };
 
-  const startPolling = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(async () => {
-      try {
-        const state = await getConnectionState(config.instanceName);
-        setConnectionState(state);
-        if (state.state === 'open') {
-          setQrBase64(null);
-          setStep('connected');
-          setStatusMsg('✅ WhatsApp conectado com sucesso!');
-          if (intervalRef.current) clearInterval(intervalRef.current);
-        }
-      } catch {
-        // keep polling
-      }
-    }, 5000);
-  };
-
   const handleDisconnect = async () => {
-    if (!confirm('Tem certeza que deseja desconectar o WhatsApp?')) return;
+    if (!confirm('Desconectar o WhatsApp?')) return;
     setLoading(true);
     setError('');
     try {
       await disconnectInstance(config.instanceName);
       setConnectionState(null);
       setQrBase64(null);
-      setStep('qr');
-      setStatusMsg('⚠️ WhatsApp desconectado. Clique em "Conectar" para gerar novo QR Code.');
+      setStatusMsg('⚠️ WhatsApp desconectado.');
+      clearPolling();
+      intervalRef.current = setInterval(fetchState, 7000);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Erro ao desconectar';
       setError(msg);
@@ -156,16 +148,16 @@ export default function WhatsAppPanel() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Tem certeza? Isso apaga a instância permanentemente.')) return;
+    if (!confirm('Excluir a instância permanentemente?')) return;
     setLoading(true);
     setError('');
     try {
       await deleteInstance(config.instanceName);
       setConnectionState(null);
-      setInstanceCreated(false);
+      setInstanceExists(false);
       setQrBase64(null);
-      setStep('instance');
-      setStatusMsg('🗑️ Instância excluída. Crie uma nova quando quiser.');
+      setStatusMsg('🗑️ Instância excluída.');
+      clearPolling();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Erro ao excluir';
       setError(msg);
@@ -174,24 +166,23 @@ export default function WhatsAppPanel() {
     }
   };
 
-  const status = connectionState?.state
-    ? statusConfig[connectionState.state as keyof typeof statusConfig]
-    : null;
+  const isOnline = connectionState?.state === 'open';
+  const needsConnect = instanceExists && !isOnline;
 
-  // ── Render ──
+  // ── RENDER ──
 
   if (!isConfigured) {
     return (
       <div className="whatsapp-panel">
         <div className="whatsapp-panel__section">
-          <h3>Conexão WhatsApp — Evolution API</h3>
+          <h3>Conexão WhatsApp</h3>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>
             Evolution API não configurada. Defina as variáveis no Vercel e faça deploy novamente.
           </p>
           <ul style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 12, lineHeight: 2 }}>
-            <li><code style={{ color: 'var(--gold)' }}>VITE_EVOLUTION_API_URL</code> — URL da Evolution API</li>
-            <li><code style={{ color: 'var(--gold)' }}>VITE_EVOLUTION_API_KEY</code> — Chave de autenticação</li>
-            <li><code style={{ color: 'var(--gold)' }}>VITE_EVOLUTION_INSTANCE</code> — Nome da instância</li>
+            <li><code style={{ color: 'var(--gold)' }}>VITE_EVOLUTION_API_URL</code></li>
+            <li><code style={{ color: 'var(--gold)' }}>VITE_EVOLUTION_API_KEY</code></li>
+            <li><code style={{ color: 'var(--gold)' }}>VITE_EVOLUTION_INSTANCE</code></li>
           </ul>
         </div>
       </div>
@@ -200,25 +191,24 @@ export default function WhatsAppPanel() {
 
   return (
     <div className="whatsapp-panel">
-      {/* INFO */}
       <div className="whatsapp-panel__section">
-        <h3>Conexão WhatsApp</h3>
-
-        {/* STATUS INDICATOR */}
-        {status && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 12,
-            padding: '12px 16px', borderRadius: 8, background: status.bg, marginBottom: 16,
-          }}>
+        {/* TITLE WITH INLINE STATUS */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <h3 style={{ margin: 0 }}>Conexão WhatsApp</h3>
+          {status && (
             <span style={{
-              width: 14, height: 14, borderRadius: '50%', background: status.cor,
-              boxShadow: `0 0 8px ${status.cor}80`, flexShrink: 0,
-            }} />
-            <span style={{ fontWeight: 700, fontSize: '0.95rem', color: status.cor }}>
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '3px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600,
+              background: status.bg, color: status.cor,
+            }}>
+              <span style={{
+                width: 8, height: 8, borderRadius: '50%',
+                background: status.cor, flexShrink: 0,
+              }} />
               {status.label}
             </span>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* STATUS MESSAGE */}
         {statusMsg && (
@@ -244,19 +234,19 @@ export default function WhatsAppPanel() {
 
         {/* ACTIONS */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {!instanceCreated && (
+          {!instanceExists && (
             <button className="btn btn--primary" onClick={handleCreateInstance} disabled={loading}>
               {loading ? 'Criando...' : '➕ Criar Instância'}
             </button>
           )}
 
-          {instanceCreated && step !== 'connected' && (
+          {needsConnect && (
             <button className="btn btn--primary" onClick={handleConnect} disabled={loading}>
               {loading ? 'Conectando...' : '📱 Conectar (QR Code)'}
             </button>
           )}
 
-          {step === 'connected' && (
+          {isOnline && (
             <>
               <button className="btn btn--secondary" onClick={handleDisconnect} disabled={loading}
                 style={{ borderColor: '#eab308', color: '#eab308' }}>
@@ -269,7 +259,7 @@ export default function WhatsAppPanel() {
             </>
           )}
 
-          <button className="btn btn--secondary" onClick={checkConnection} disabled={loading}
+          <button className="btn btn--secondary" onClick={fetchState} disabled={loading}
             style={{ padding: '8px 14px', fontSize: '0.82rem' }}>
             🔄 Verificar Status
           </button>
@@ -280,7 +270,7 @@ export default function WhatsAppPanel() {
       <div className="whatsapp-panel__section" style={{ marginTop: 24 }}>
         <h3>Mensagem automática para leads</h3>
         <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: 8 }}>
-          Use {'{nome}'} para inserir o nome do lead. Esta mensagem é enviada quando alguém preenche o formulário.
+          Use {'{nome}'} para inserir o nome do lead.
         </p>
         <textarea
           value={messageTemplate}

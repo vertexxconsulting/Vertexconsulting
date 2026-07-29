@@ -9,6 +9,8 @@ import {
 } from '../../services/evolutionApi';
 import type { ConnectionState } from '../../types';
 
+const DEFAULT_TEMPLATE = 'Olá {nome}! Recebemos sua solicitação na Vertex Consulting. Nossa equipe entrará em contato em breve. Obrigado!';
+
 type Step = 'config' | 'instance' | 'qr' | 'connected';
 
 const statusConfig = {
@@ -28,6 +30,10 @@ export default function WhatsAppPanel() {
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
   const [error, setError] = useState('');
+  const [messageTemplate, setMessageTemplate] = useState(() => {
+    return localStorage.getItem('vertex_msg_template') || DEFAULT_TEMPLATE;
+  });
+  const [templateSaved, setTemplateSaved] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Auto-check connection on mount if configured
@@ -267,6 +273,40 @@ export default function WhatsAppPanel() {
             style={{ padding: '8px 14px', fontSize: '0.82rem' }}>
             🔄 Verificar Status
           </button>
+        </div>
+      </div>
+
+      {/* MENSAGEM WHATSAPP */}
+      <div className="whatsapp-panel__section" style={{ marginTop: 24 }}>
+        <h3>Mensagem automática para leads</h3>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: 8 }}>
+          Use {'{nome}'} para inserir o nome do lead. Esta mensagem é enviada quando alguém preenche o formulário.
+        </p>
+        <textarea
+          value={messageTemplate}
+          onChange={(e) => setMessageTemplate(e.target.value)}
+          rows={4}
+          style={{
+            width: '100%', padding: 12, borderRadius: 8, fontSize: '0.85rem',
+            background: '#111', color: '#d8d8d8', border: '1px solid rgba(201,168,76,0.2)',
+            resize: 'vertical', fontFamily: 'inherit',
+          }}
+        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
+          <button
+            className="btn btn--primary"
+            style={{ padding: '8px 18px', fontSize: '0.82rem' }}
+            onClick={() => {
+              localStorage.setItem('vertex_msg_template', messageTemplate);
+              setTemplateSaved(true);
+              setTimeout(() => setTemplateSaved(false), 2000);
+            }}
+          >
+            Salvar Mensagem
+          </button>
+          {templateSaved && (
+            <span style={{ fontSize: '0.82rem', color: '#22c55e' }}>✅ Salva</span>
+          )}
         </div>
       </div>
     </div>

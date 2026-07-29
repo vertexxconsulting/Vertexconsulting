@@ -106,8 +106,13 @@ export async function sendLeadNotification(
     return false;
   }
 
+  // Template editável salvo no CRM (localStorage), fallback pra env var
+  const template = typeof window !== 'undefined'
+    ? (localStorage.getItem('vertex_msg_template') || ENV_MESSAGE_TEMPLATE)
+    : ENV_MESSAGE_TEMPLATE;
+
   try {
-    const message = buildMessage(config.messageTemplate, name);
+    const message = buildMessage(template, name);
     await sendTextMessage(config.instanceName, phone, message);
     return true;
   } catch (error) {

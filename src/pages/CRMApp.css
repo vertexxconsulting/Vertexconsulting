@@ -37,6 +37,26 @@
   color: var(--gold-light);
   border-color: var(--line-gold);
 }
+.crm__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.crm__logout-btn {
+  font-size: 0.82rem;
+  color: #ff6b6b;
+  background: rgba(255,107,107,0.08);
+  border: 1px solid rgba(255,107,107,0.25);
+  padding: 6px 14px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: var(--t-fast);
+}
+.crm__logout-btn:hover {
+  background: rgba(255,107,107,0.16);
+  border-color: rgba(255,107,107,0.5);
+}
+
 .crm__menu-btn {
   display: none;
   background: none;

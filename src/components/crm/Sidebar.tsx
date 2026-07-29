@@ -11,7 +11,6 @@ const navItems: { view: View; label: string }[] = [
   { view: Views.Dashboard, label: 'Dashboard' },
   { view: Views.Contacts, label: 'Contatos' },
   { view: Views.WhatsApp, label: 'WhatsApp' },
-  { view: Views.Settings, label: 'Configurações' },
 ];
 
 export default function Sidebar({ currentView, setCurrentView, isOpen, onClose }: SidebarProps) {

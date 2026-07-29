@@ -1,6 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Apenas a URL está exposta aqui. A ANON_KEY vai via VITE_SUPABASE_ANON_KEY no Vercel.
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://nzxxrnmaschelfggtzfv.supabase.co';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eHhybm1hc2NoZWxmZ2d0emZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4NDU0NDcsImV4cCI6MjEwMDQyMTQ0N30.Hh4vTVU88fHId0PWctE_NGeLpFm4Go042gz4lAutFwU';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+if (!SUPABASE_ANON_KEY) {
+  console.warn(
+    'VITE_SUPABASE_ANON_KEY não definida. Defina no Vercel (Dashboard > Project > Settings > Environment Variables).'
+  );
+}
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

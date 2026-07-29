@@ -3,7 +3,6 @@ import Sidebar from '../components/crm/Sidebar';
 import Dashboard from '../components/crm/Dashboard';
 import Contacts from '../components/crm/Contacts';
 import WhatsAppPanel from '../components/crm/WhatsAppPanel';
-import Settings from '../components/crm/Settings';
 import { Views, type View } from '../types';
 import './CRMApp.css';
 
@@ -19,8 +18,6 @@ export default function CRMApp() {
         return <Contacts />;
       case Views.WhatsApp:
         return <WhatsAppPanel />;
-      case Views.Settings:
-        return <Settings />;
       default:
         return <Dashboard />;
     }

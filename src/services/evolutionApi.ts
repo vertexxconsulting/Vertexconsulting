@@ -1,22 +1,27 @@
-import type { EvolutionConfig, QRCodeResponse, ConnectionState } from '../types';
+import type { QRCodeResponse, ConnectionState } from '../types';
 
 const DEFAULT_MESSAGE_TEMPLATE = 'Olá {nome}! Recebemos sua solicitação na Vertex Consulting. Nossa equipe entrará em contato em breve. Obrigado!';
 
-export function getEvolutionConfig(): EvolutionConfig {
-  const saved = localStorage.getItem('vertex_evolution_config');
-  if (saved) {
-    return JSON.parse(saved);
-  }
-  return {
-    apiUrl: '',
-    apiKey: '',
-    instanceName: 'vertex-consulting',
-    messageTemplate: DEFAULT_MESSAGE_TEMPLATE,
-  };
+// Variáveis injetadas via Vercel (Environment Variables)
+// Defina no Vercel: Dashboard > Project > Settings > Environment Variables
+const ENV_API_URL = import.meta.env.VITE_EVOLUTION_API_URL || '';
+const ENV_API_KEY = import.meta.env.VITE_EVOLUTION_API_KEY || '';
+const ENV_INSTANCE_NAME = import.meta.env.VITE_EVOLUTION_INSTANCE || 'vertex-crm';
+const ENV_MESSAGE_TEMPLATE = import.meta.env.VITE_EVOLUTION_MSG_TEMPLATE || DEFAULT_MESSAGE_TEMPLATE;
+
+if (!ENV_API_URL || !ENV_API_KEY) {
+  console.warn(
+    'Evolution API não configurada. Defina VITE_EVOLUTION_API_URL e VITE_EVOLUTION_API_KEY no Vercel.'
+  );
 }
 
-export function saveEvolutionConfig(config: EvolutionConfig): void {
-  localStorage.setItem('vertex_evolution_config', JSON.stringify(config));
+export function getEvolutionConfig() {
+  return {
+    apiUrl: ENV_API_URL,
+    apiKey: ENV_API_KEY,
+    instanceName: ENV_INSTANCE_NAME,
+    messageTemplate: ENV_MESSAGE_TEMPLATE,
+  };
 }
 
 async function apiCall<T>(
@@ -26,7 +31,7 @@ async function apiCall<T>(
 ): Promise<T> {
   const config = getEvolutionConfig();
   if (!config.apiUrl || !config.apiKey) {
-    throw new Error('Evolution API não configurada. Acesse Configurações no CRM.');
+    throw new Error('Evolution API não configurada. Defina as variáveis no Vercel.');
   }
 
   const url = `${config.apiUrl.replace(/\/$/, '')}${endpoint}`;
@@ -47,6 +52,14 @@ async function apiCall<T>(
   }
 
   return response.json();
+}
+
+export async function disconnectInstance(instanceName: string): Promise<unknown> {
+  return apiCall(`/instance/disconnect/${instanceName}`, 'DELETE');
+}
+
+export async function deleteInstance(instanceName: string): Promise<unknown> {
+  return apiCall(`/instance/delete/${instanceName}`, 'DELETE');
 }
 
 export async function createInstance(instanceName: string): Promise<unknown> {

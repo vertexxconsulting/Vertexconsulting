@@ -19,13 +19,12 @@ export const ContactStatuses = {
 
 export type Priority = 'Baixa' | 'Média' | 'Alta';
 
-export type View = 'Dashboard' | 'Contatos' | 'WhatsApp' | 'Configurações';
+export type View = 'Dashboard' | 'Contatos' | 'WhatsApp';
 
 export const Views = {
   Dashboard: 'Dashboard',
   Contacts: 'Contatos',
   WhatsApp: 'WhatsApp',
-  Settings: 'Configurações',
 } as const;
 
 export type ConversationStatus = 'Ativo' | 'Aguardando' | 'Encerrada';
@@ -65,13 +64,6 @@ export interface KanbanColumnData {
   title: string;
   status: ContactStatus;
   cards: KanbanCardData[];
-}
-
-export interface EvolutionConfig {
-  apiUrl: string;
-  apiKey: string;
-  instanceName: string;
-  messageTemplate: string;
 }
 
 export interface ConnectionState {

@@ -237,9 +237,12 @@
   justify-content: center;
   align-items: center;
 }
+.hero__logo-float {
+  animation: heroFloat 5s ease-in-out infinite;
+}
 .hero__logo-ring {
-  width: 340px;
-  height: 340px;
+  width: 480px;
+  height: 480px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -247,14 +250,17 @@
   border-radius: 50%;
   background: var(--bg-deep);
   border: 1px solid var(--line-gold);
-  animation: pulseGlow 4s ease-in-out infinite;
 }
 .hero__logo-ring img {
-  width: 240px;
-  height: 240px;
-  object-fit: cover;
-  border-radius: 50%;
+  width: 380px;
+  height: 380px;
+  object-fit: contain;
 }
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-18px); }
+}
+
 
 /* ==================== BUTTONS ==================== */
 .btn {

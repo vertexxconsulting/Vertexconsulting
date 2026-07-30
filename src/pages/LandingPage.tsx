@@ -6,10 +6,18 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const logoRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 60);
+      // Gira a logo conforme o scroll
+      if (logoRef.current) {
+        const rot = window.scrollY * 0.08;
+        logoRef.current.style.transform = `rotate(${rot}deg)`;
+      }
+    };
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -103,6 +111,10 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="hero">
+        <div className="hero__grid" />
+        <div className="hero__orb hero__orb--1" />
+        <div className="hero__orb hero__orb--2" />
+        <div className="hero__orb hero__orb--3" />
         <div className="hero__inner">
           <div className="hero__content">
             <div className="hero__badge">Consultoria Estratégica</div>
@@ -123,8 +135,10 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="hero__visual">
-            <div className="hero__logo-ring">
-              <img src="/logo-hero.jpeg" alt="Vertex Consulting" />
+            <div className="hero__logo-float">
+              <div className="hero__logo-ring" ref={logoRef}>
+                <img src="/logo-hero.png" alt="Vertex Consulting" />
+              </div>
             </div>
           </div>
         </div>
@@ -136,21 +150,16 @@ export default function LandingPage() {
       <section id="services" className="section">
         <div className="section__inner">
           <div className="section__header anim">
-            <span className="section__eyebrow">Nossos Serviços</span>
             <h2>Soluções completas para o seu crescimento</h2>
-            <p className="section__sub">
-              Oferecemos um ecossistema de serviços integrados para acelerar
-              resultados e posicionar sua marca no mercado.
-            </p>
           </div>
           <div className="services-grid">
             {[
-              { title: 'Estratégia', desc: 'Planejamento estratégico sob medida para alavancar seus resultados e definir o caminho para o sucesso.' },
-              { title: 'Marca', desc: 'Construção e fortalecimento de marca com identidade visual impactante e posicionamento assertivo.' },
-              { title: 'Inteligência Artificial', desc: 'Implementação de soluções de IA para automatizar processos e gerar insights estratégicos.' },
-              { title: 'Treinamentos', desc: 'Capacitação personalizada para equipes com foco em resultados práticos e mensuráveis.' },
-              { title: 'Resultados', desc: 'Acompanhamento contínuo de métricas e KPIs para garantir o retorno sobre o investimento.' },
-              { title: 'Presença Digital', desc: 'Desenvolvimento de sites, landing pages e estratégias digitais que convertem visitantes em clientes.' },
+              { title: 'Estratégia', desc: 'Diagnóstico de maturidade digital, plano de ação com metas claras e roadmap de tecnologia para o seu negócio.' },
+              { title: 'Marca', desc: 'Identidade visual, posicionamento e presença digital alinhados ao que sua empresa realmente vende.' },
+              { title: 'Inteligência Artificial', desc: 'Automação de atendimento, CRM com IA e sistemas que aprendem com seus clientes.' },
+              { title: 'Treinamentos', desc: 'Capacitação da sua equipe para operar as ferramentas digitais do dia a dia sem dependência técnica.' },
+              { title: 'Resultados', desc: 'Acompanhamento de métricas reais: leads gerados, taxas de conversão e retorno sobre cada investimento.' },
+              { title: 'Presença Digital', desc: 'Sites, landing pages e sistemas web que convertem visitantes em clientes — não só páginas bonitas.' },
             ].map((s) => (
               <div key={s.title} className="service-card anim">
                 <h3>{s.title}</h3>
@@ -166,18 +175,15 @@ export default function LandingPage() {
         <div className="section__inner about-grid">
           <div className="about-visual anim">
             <div className="about-img-wrap">
-              <img src="/logo.jpeg" alt="Vertex Consulting" />
+              <img src="/logo-about.jpeg" alt="Vertex Consulting" />
             </div>
           </div>
           <div className="about-content anim">
-            <span className="section__eyebrow">Sobre Nós</span>
             <h2>Consultoria que entrega resultados reais</h2>
-            <ul className="about-features">
-              <li><span className="check">✓</span> Metodologia comprovada com foco em resultados</li>
-              <li><span className="check">✓</span> Equipe multidisciplinar e especializada</li>
-              <li><span className="check">✓</span> Integração de IA em todos os processos</li>
-              <li><span className="check">✓</span> Acompanhamento contínuo pós-projeto</li>
-            </ul>
+            <p style={{ color: 'var(--text-muted)', lineHeight: 1.8, fontSize: '0.95rem' }}>
+              A Vertex nasceu em Telêmaco Borba com um objetivo direto: transformar pequenos negócios locais
+              através de tecnologia que realmente funciona — sem promessa vazia, sem template genérico.
+            </p>
           </div>
         </div>
       </section>
@@ -186,19 +192,14 @@ export default function LandingPage() {
       <section id="process" className="section">
         <div className="section__inner">
           <div className="section__header anim">
-            <span className="section__eyebrow">Nosso Processo</span>
             <h2>Como trabalhamos</h2>
-            <p className="section__sub">
-              Um processo estruturado e transparente para garantir os melhores
-              resultados em cada etapa.
-            </p>
           </div>
           <div className="process-steps">
             {[
-              { n: '01', title: 'Diagnóstico', desc: 'Análise profunda do seu negócio, mercado e oportunidades de crescimento.' },
-              { n: '02', title: 'Estratégia', desc: 'Definição de um plano de ação personalizado com metas claras e mensuráveis.' },
-              { n: '03', title: 'Execução', desc: 'Implementação das soluções com agilidade e acompanhamento em tempo real.' },
-              { n: '04', title: 'Resultados', desc: 'Mensuração de resultados e otimização contínua para maximizar o ROI.' },
+              { n: '01', title: 'Diagnóstico', desc: 'Entrevista com você, análise da concorrência local e entendimento de como seu cliente te encontra hoje.' },
+              { n: '02', title: 'Estratégia', desc: 'Definição do que será construído: site, sistema, CRM ou integração. Tudo documentado antes de escrever código.' },
+              { n: '03', title: 'Execução', desc: 'Desenvolvimento com tecnologia moderna (Next.js + Supabase) e entregas parciais pra você ver o resultado no meio do caminho.' },
+              { n: '04', title: 'Resultados', desc: 'Site no ar, métricas sendo coletadas e ajustes finos baseados em dados reais — não em suposição.' },
             ].map((s) => (
               <div key={s.n} className="step anim">
                 <div className="step__num">{s.n}</div>

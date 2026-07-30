@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react';
+import {
+  Target, Diamond, Brain, GraduationCap, BarChart3, Globe,
+} from 'lucide-react';
 import { createContact } from '../services/contactService';
 import './LandingPage.css';
 
@@ -154,16 +157,18 @@ export default function LandingPage() {
           </div>
           <div className="services-grid">
             {[
-              { title: 'Estratégia', desc: 'Diagnóstico de maturidade digital, plano de ação com metas claras e roadmap de tecnologia para o seu negócio.' },
-              { title: 'Marca', desc: 'Identidade visual, posicionamento e presença digital alinhados ao que sua empresa realmente vende.' },
-              { title: 'Inteligência Artificial', desc: 'Automação de atendimento, CRM com IA e sistemas que aprendem com seus clientes.' },
-              { title: 'Treinamentos', desc: 'Capacitação da sua equipe para operar as ferramentas digitais do dia a dia sem dependência técnica.' },
-              { title: 'Resultados', desc: 'Acompanhamento de métricas reais: leads gerados, taxas de conversão e retorno sobre cada investimento.' },
-              { title: 'Presença Digital', desc: 'Sites, landing pages e sistemas web que convertem visitantes em clientes — não só páginas bonitas.' },
+              { title: 'Estratégia', desc: 'Diagnóstico de maturidade digital, plano de ação com metas claras e roadmap de tecnologia para o seu negócio.', icon: Target },
+              { title: 'Marca', desc: 'Identidade visual, posicionamento e presença digital alinhados ao que sua empresa realmente vende.', icon: Diamond },
+              { title: 'Inteligência Artificial', desc: 'Automação de atendimento, CRM com IA e sistemas que aprendem com seus clientes.', icon: Brain },
+              { title: 'Treinamentos', desc: 'Capacitação da sua equipe para operar as ferramentas digitais do dia a dia sem dependência técnica.', icon: GraduationCap },
+              { title: 'Resultados', desc: 'Acompanhamento de métricas reais: leads gerados, taxas de conversão e retorno sobre cada investimento.', icon: BarChart3 },
+              { title: 'Presença Digital', desc: 'Sites, landing pages e sistemas web que convertem visitantes em clientes — não só páginas bonitas.', icon: Globe },
             ].map((s) => (
               <div key={s.title} className="service-card anim">
+                <div className="service-card__icon"><s.icon size={28} /></div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
+                <span className="service-card__cta">Saiba mais →</span>
               </div>
             ))}
           </div>
@@ -180,10 +185,28 @@ export default function LandingPage() {
           </div>
           <div className="about-content anim">
             <h2>Consultoria que entrega resultados reais</h2>
-            <p style={{ color: 'var(--text-muted)', lineHeight: 1.8, fontSize: '0.95rem' }}>
+            <p style={{ color: 'var(--text-muted)', lineHeight: 1.8, fontSize: '0.95rem', marginBottom: 24 }}>
               A Vertex nasceu em Telêmaco Borba com um objetivo direto: transformar pequenos negócios locais
               através de tecnologia que realmente funciona — sem promessa vazia, sem template genérico.
             </p>
+            <div className="about-mini-cards">
+              <div className="about-mini-card">
+                <span className="about-mini-card__icon">✓</span>
+                <span>Metodologia comprovada</span>
+              </div>
+              <div className="about-mini-card">
+                <span className="about-mini-card__icon">✓</span>
+                <span>Equipe multidisciplinar</span>
+              </div>
+              <div className="about-mini-card">
+                <span className="about-mini-card__icon">✓</span>
+                <span>IA integrada aos processos</span>
+              </div>
+              <div className="about-mini-card">
+                <span className="about-mini-card__icon">✓</span>
+                <span>Suporte contínuo</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>

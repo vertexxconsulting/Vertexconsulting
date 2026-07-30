@@ -124,7 +124,7 @@ export default function LandingPage() {
           </div>
           <div className="hero__visual">
             <div className="hero__logo-ring">
-              <img src="/logo.jpeg" alt="Vertex Consulting" />
+              <img src="/logo-hero.jpeg" alt="Vertex Consulting" />
             </div>
           </div>
         </div>

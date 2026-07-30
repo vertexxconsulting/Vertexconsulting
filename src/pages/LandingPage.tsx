@@ -168,23 +168,10 @@ export default function LandingPage() {
             <div className="about-img-wrap">
               <img src="/logo.jpeg" alt="Vertex Consulting" />
             </div>
-            <div className="about-float">
-              <div className="about-float__num">5+</div>
-              <div className="about-float__label">Anos de Mercado</div>
-            </div>
           </div>
           <div className="about-content anim">
             <span className="section__eyebrow">Sobre Nós</span>
             <h2>Consultoria que entrega resultados reais</h2>
-            <p>
-              A Vertex Consulting nasceu da paixão por transformar negócios
-              através de estratégias inteligentes. Combinamos experiência prática
-              com as tecnologias mais avançadas do mercado.
-            </p>
-            <p>
-              Nosso diferencial está na abordagem personalizada: cada projeto
-              é único e merece uma solução sob medida.
-            </p>
             <ul className="about-features">
               <li><span className="check">✓</span> Metodologia comprovada com foco em resultados</li>
               <li><span className="check">✓</span> Equipe multidisciplinar e especializada</li>

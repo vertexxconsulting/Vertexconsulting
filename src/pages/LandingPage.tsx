@@ -188,11 +188,12 @@ export default function LandingPage() {
       </section>
 
       {/* About */}
-      <section id="about" className="section section--alt">
+      <section id="about" className="section section--photo">
+        <div className="parallax-bg" style={{ backgroundImage: "url('/bg-about.jpg')" }} />
         <div className="section__inner about-grid">
           <div className="about-visual anim">
             <div className="about-img-wrap">
-              <img src="/bg-about.jpg" alt="Vertex Consulting — nosso espaço" />
+              <img src="/logo-about.jpeg" alt="Vertex Consulting" />
             </div>
           </div>
           <div className="about-content anim">
@@ -243,34 +244,6 @@ export default function LandingPage() {
                 <p>{s.desc}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Gallery — espaço e produtos reais */}
-      <section id="gallery" className="section section--alt">
-        <div className="section__inner">
-          <div className="section__header anim">
-            <span className="section__eyebrow">Na prática</span>
-            <h2>Nosso espaço, nossos resultados</h2>
-            <p className="section__sub">
-              Fotos reais do nosso trabalho e do ambiente onde sua empresa
-              ganha presença digital.
-            </p>
-          </div>
-          <div className="gallery-grid">
-            <div className="gallery-item anim">
-              <img src="/espaco-1.jpg" alt="Espaço Vertex Consulting" />
-              <span className="gallery-item__tag">Nosso espaço</span>
-            </div>
-            <div className="gallery-item anim">
-              <img src="/espaco-2.jpg" alt="Espaço Vertex Consulting" />
-              <span className="gallery-item__tag">Nosso espaço</span>
-            </div>
-            <div className="gallery-item anim">
-              <img src="/produtos-1.jpg" alt="Produtos e entregas Vertex Consulting" />
-              <span className="gallery-item__tag">Entregas</span>
-            </div>
           </div>
         </div>
       </section>

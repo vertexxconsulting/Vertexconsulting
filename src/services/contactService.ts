@@ -9,6 +9,8 @@ export async function createContact(data: {
   company: string;
   service: string;
   message: string;
+  has_site: string;
+  instagram: string;
 }): Promise<{ contact: ContactData | null; whatsappSent: boolean }> {
   const { data: contact, error } = await supabase
     .from('contacts')

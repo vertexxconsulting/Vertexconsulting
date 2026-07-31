@@ -369,6 +369,31 @@
   color: var(--text-body);
   padding: 8px 0;
 }
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-body);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--t-fast), border-color var(--t-fast);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 3px 10px;
+  background: var(--bg-ground);
+}
+.contact-link:hover {
+  color: var(--gold-light);
+  border-color: var(--gold);
+}
+.contact-link--whatsapp svg { color: #25d366; }
+.contact-link--instagram svg { color: var(--gold); }
+.contact-link--whatsapp:hover { border-color: rgba(37, 211, 102, 0.5); }
+.contact-link--instagram:hover { border-color: var(--gold); }
+.data-table td .contact-link {
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
 .modal__field select,
 .modal__field textarea {
   width: 100%;

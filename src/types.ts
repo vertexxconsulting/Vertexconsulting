@@ -41,6 +41,8 @@ export interface ContactData {
   company: string;
   service: string;
   message: string;
+  has_site: string;
+  instagram: string;
   status: ContactStatus;
   priority: Priority;
   notes: string;

@@ -12,23 +12,35 @@ export async function createContact(data: {
   has_site: string;
   instagram: string;
 }): Promise<{ contact: ContactData | null; whatsappSent: boolean }> {
-  const { data: contact, error } = await supabase
+  // Gera o ID no cliente: evita o SELECT pós-insert (que o RLS bloqueia p/ anon)
+  const id = crypto.randomUUID();
+
+  const { error } = await supabase
     .from('contacts')
     .insert([{
+      id,
       ...data,
       status: 'Novo',
       priority: 'Média',
       notes: '',
       whatsapp_sent: false,
       created_at: new Date().toISOString(),
-    }])
-    .select()
-    .single();
+    }]);
 
   if (error) {
     console.error('Erro ao salvar contato:', error);
     throw error;
   }
+
+  const contact: ContactData | null = {
+    id,
+    ...data,
+    status: 'Novo',
+    priority: 'Média',
+    notes: '',
+    whatsapp_sent: false,
+    created_at: new Date().toISOString(),
+  };
 
   let whatsappSent = false;
   if (data.phone) {

@@ -9,17 +9,11 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-  const logoRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 60);
-      // Gira a logo conforme o scroll
-      if (logoRef.current) {
-        const rot = window.scrollY * 0.08;
-        logoRef.current.style.transform = `rotate(${rot}deg)`;
-      }
       // Parallax: desloca os backgrounds com velocidade menor que o scroll
       document.querySelectorAll<HTMLElement>('.parallax-bg').forEach((el) => {
         const parent = el.parentElement;
@@ -150,7 +144,7 @@ export default function LandingPage() {
           </div>
           <div className="hero__visual">
             <div className="hero__logo-float">
-              <div className="hero__logo-ring" ref={logoRef}>
+              <div className="hero__logo-ring">
                 <img src="/logo-hero.png" alt="Vertex Consulting" />
               </div>
             </div>

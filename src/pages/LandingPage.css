@@ -173,6 +173,7 @@
 /* ==================== HERO ==================== */
 .hero {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   position: relative;
@@ -248,7 +249,7 @@
   justify-content: center;
   position: relative;
   border-radius: 50%;
-  background: var(--bg-deep);
+  background: transparent;
   border: 1px solid var(--line-gold);
 }
 .hero__logo-ring img {

@@ -332,18 +332,18 @@ export default function LandingPage() {
                 <div className="contact-detail__label">Horário</div>
                 <div className="contact-detail__value">Seg - Sex, 8h às 18h</div>
               </div>
-            </div>
-          </div>
-          <div className="contact-form-wrap anim">
-            <div className="contact-form-preview">
-              <h3>Fale com a Vertex</h3>
-              <p>
-                Clique no botão abaixo para abrir o formulário e contar seu
-                projeto em poucos minutos.
-              </p>
-              <button className="btn btn--primary btn--full" onClick={openForm}>
-                Preencher Formulário
-              </button>
+              <a
+                href="https://www.instagram.com/vertexxconsulting"
+                target="_blank"
+                rel="noreferrer"
+                className="contact-detail contact-detail--link"
+              >
+                <div className="contact-detail__label">Instagram</div>
+                <div className="contact-detail__value contact-detail__value--social">
+                  <InstagramIcon />
+                  @vertexxconsulting
+                </div>
+              </a>
             </div>
           </div>
         </div>

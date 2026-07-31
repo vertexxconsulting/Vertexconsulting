@@ -966,36 +966,6 @@
   line-height: 1.7;
   max-width: 340px;
 }
-.contact-form-social {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  margin-top: 8px;
-}
-.contact-social-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-xs);
-  background: var(--bg-ground);
-  color: var(--text-body);
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: var(--t-fast);
-}
-.contact-social-link svg {
-  color: var(--gold);
-  flex-shrink: 0;
-}
-.contact-social-link:hover {
-  border-color: var(--gold);
-  color: var(--gold-light);
-  transform: translateY(-1px);
-}
 .contact-cta-row {
   margin-bottom: 24px;
 }

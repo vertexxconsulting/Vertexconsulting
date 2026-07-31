@@ -332,26 +332,6 @@ export default function LandingPage() {
               <button className="btn btn--primary btn--full" onClick={openForm}>
                 Preencher Formulário
               </button>
-              <div className="contact-form-social">
-                <a
-                  href="https://www.instagram.com/vertexxconsulting"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="contact-social-link"
-                >
-                  <InstagramIcon />
-                  <span>@vertexxconsulting</span>
-                </a>
-                <a
-                  href="https://wa.me/5542991000000"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="contact-social-link"
-                >
-                  <WhatsAppIcon />
-                  <span>WhatsApp</span>
-                </a>
-              </div>
             </div>
           </div>
         </div>

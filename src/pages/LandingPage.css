@@ -250,7 +250,6 @@
   position: relative;
   border-radius: 50%;
   background: transparent;
-  border: 1px solid var(--line-gold);
 }
 .hero__logo-ring img {
   width: 380px;

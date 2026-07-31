@@ -838,7 +838,7 @@
   position: relative;
   z-index: 2;
 }
-.hero--photo::before {
+.hero--photo::after {
   content: '';
   position: absolute;
   inset: 0;

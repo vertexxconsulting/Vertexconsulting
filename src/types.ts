@@ -69,8 +69,10 @@ export interface KanbanColumnData {
 }
 
 export interface ConnectionState {
-  instance: string;
-  state: 'open' | 'close' | 'connecting';
+  instance: {
+    instanceName: string;
+    state: 'open' | 'close' | 'connecting';
+  };
 }
 
 export interface QRCodeResponse {

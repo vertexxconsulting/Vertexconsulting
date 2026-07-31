@@ -20,8 +20,18 @@ export default function LandingPage() {
         const rot = window.scrollY * 0.08;
         logoRef.current.style.transform = `rotate(${rot}deg)`;
       }
+      // Parallax: desloca os backgrounds com velocidade menor que o scroll
+      document.querySelectorAll<HTMLElement>('.parallax-bg').forEach((el) => {
+        const parent = el.parentElement;
+        if (!parent) return;
+        const rect = parent.getBoundingClientRect();
+        if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+        const center = rect.top + rect.height / 2 - window.innerHeight / 2;
+        el.style.transform = `translateY(${center * 0.25}px)`;
+      });
     };
-    window.addEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -113,7 +123,8 @@ export default function LandingPage() {
       )}
 
       {/* Hero */}
-      <section className="hero">
+      <section className="hero hero--photo">
+        <div className="parallax-bg" style={{ backgroundImage: "url('/bg-hero.jpg')" }} />
         <div className="hero__grid" />
         <div className="hero__orb hero__orb--1" />
         <div className="hero__orb hero__orb--2" />
@@ -150,7 +161,8 @@ export default function LandingPage() {
 
 
       {/* Services */}
-      <section id="services" className="section">
+      <section id="services" className="section section--photo">
+        <div className="parallax-bg" style={{ backgroundImage: "url('/bg-services.jpg')" }} />
         <div className="section__inner">
           <div className="section__header anim">
             <h2>Soluções completas para o seu crescimento</h2>
@@ -180,7 +192,7 @@ export default function LandingPage() {
         <div className="section__inner about-grid">
           <div className="about-visual anim">
             <div className="about-img-wrap">
-              <img src="/logo-about.jpeg" alt="Vertex Consulting" />
+              <img src="/bg-about.jpg" alt="Vertex Consulting — nosso espaço" />
             </div>
           </div>
           <div className="about-content anim">
@@ -212,7 +224,8 @@ export default function LandingPage() {
       </section>
 
       {/* Process */}
-      <section id="process" className="section">
+      <section id="process" className="section section--photo">
+        <div className="parallax-bg" style={{ backgroundImage: "url('/bg-process.jpg')" }} />
         <div className="section__inner">
           <div className="section__header anim">
             <h2>Como trabalhamos</h2>
@@ -234,8 +247,37 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Gallery — espaço e produtos reais */}
+      <section id="gallery" className="section section--alt">
+        <div className="section__inner">
+          <div className="section__header anim">
+            <span className="section__eyebrow">Na prática</span>
+            <h2>Nosso espaço, nossos resultados</h2>
+            <p className="section__sub">
+              Fotos reais do nosso trabalho e do ambiente onde sua empresa
+              ganha presença digital.
+            </p>
+          </div>
+          <div className="gallery-grid">
+            <div className="gallery-item anim">
+              <img src="/espaco-1.jpg" alt="Espaço Vertex Consulting" />
+              <span className="gallery-item__tag">Nosso espaço</span>
+            </div>
+            <div className="gallery-item anim">
+              <img src="/espaco-2.jpg" alt="Espaço Vertex Consulting" />
+              <span className="gallery-item__tag">Nosso espaço</span>
+            </div>
+            <div className="gallery-item anim">
+              <img src="/produtos-1.jpg" alt="Produtos e entregas Vertex Consulting" />
+              <span className="gallery-item__tag">Entregas</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Contact */}
-      <section id="contact" className="section section--alt">
+      <section id="contact" className="section section--photo">
+        <div className="parallax-bg" style={{ backgroundImage: "url('/bg-contact.jpg')" }} />
         <div className="section__inner contact-grid">
           <div className="contact-info anim">
             <span className="section__eyebrow">Contato</span>

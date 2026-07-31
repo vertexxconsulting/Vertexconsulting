@@ -101,6 +101,15 @@ export default function LandingPage() {
     if (formStatus !== 'idle') setFormStatus('idle');
   };
 
+  const isFormComplete = () => {
+    const required: (keyof typeof formData)[] = [
+      'name', 'email', 'phone', 'company', 'service', 'has_site', 'instagram', 'message',
+    ];
+    return required.every((k) => formData[k].trim() !== '');
+  };
+
+  const canSubmit = isFormComplete() && formStatus !== 'sending';
+
   const openForm = () => {
     setMobileMenu(false);
     setFormOpen(true);
@@ -422,6 +431,7 @@ export default function LandingPage() {
                           placeholder="(00) 00000-0000"
                           value={formData.phone}
                           onChange={setField('phone')}
+                          required
                         />
                       </div>
                     </div>
@@ -434,6 +444,7 @@ export default function LandingPage() {
                         placeholder="Nome da empresa"
                         value={formData.company}
                         onChange={setField('company')}
+                        required
                       />
                     </div>
                   </div>
@@ -445,6 +456,7 @@ export default function LandingPage() {
                         name="has_site"
                         value={formData.has_site}
                         onChange={setField('has_site')}
+                        required
                       >
                         <option value="">Selecione</option>
                         <option value="Sim">Sim</option>
@@ -462,6 +474,7 @@ export default function LandingPage() {
                           placeholder="@seuperfil"
                           value={formData.instagram}
                           onChange={setField('instagram')}
+                          required
                         />
                       </div>
                     </div>
@@ -500,10 +513,15 @@ export default function LandingPage() {
                       Erro ao enviar mensagem. Tente novamente.
                     </div>
                   )}
+                  {!isFormComplete() && (
+                    <div className="form-msg form-msg--hint">
+                      Preencha todos os campos para enviar.
+                    </div>
+                  )}
                   <button
                     type="submit"
                     className="btn btn--primary btn--full"
-                    disabled={formStatus === 'sending'}
+                    disabled={!canSubmit}
                   >
                     {formStatus === 'sending' ? 'Enviando...' : 'Enviar Mensagem'}
                   </button>

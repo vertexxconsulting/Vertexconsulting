@@ -34,10 +34,7 @@ export async function createContact(data: {
   if (data.phone) {
     whatsappSent = await sendLeadNotification(data.name, data.phone);
     if (whatsappSent && contact) {
-      await supabase
-        .from('contacts')
-        .update({ whatsapp_sent: true })
-        .eq('id', contact.id);
+      await supabase.rpc('mark_whatsapp_sent', { p_contact_id: contact.id });
     }
   }
 

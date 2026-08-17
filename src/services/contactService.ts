@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { sendLeadNotification } from './evolutionApi';
+import { syncLeadToBolten, updateBoltenOpportunity } from './boltenService';
 import type { ContactData, ContactStatus, Priority, DashboardMetrics } from '../types';
 
 export async function createContact(data: {
@@ -30,6 +31,18 @@ export async function createContact(data: {
   if (error) {
     console.error('Erro ao salvar contato:', error);
     throw error;
+  }
+
+  // Cria contato + oportunidade no Bolten e grava os IDs no registro
+  const bolten = await syncLeadToBolten(data);
+  if (bolten) {
+    await supabase
+      .from('contacts')
+      .update({
+        bolten_contact_id: bolten.contactId,
+        bolten_opportunity_id: bolten.opportunityId,
+      })
+      .eq('id', id);
   }
 
   const contact: ContactData | null = {
@@ -76,6 +89,17 @@ export async function updateContactStatus(
     .eq('id', id);
 
   if (error) throw error;
+
+  // Espelha a alteração no funil do Bolten
+  const { data } = await supabase
+    .from('contacts')
+    .select('bolten_opportunity_id')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (data?.bolten_opportunity_id) {
+    void updateBoltenOpportunity(data.bolten_opportunity_id, { status });
+  }
 }
 
 export async function updateContactPriority(
@@ -88,6 +112,17 @@ export async function updateContactPriority(
     .eq('id', id);
 
   if (error) throw error;
+
+  // Espelha a alteração no funil do Bolten
+  const { data } = await supabase
+    .from('contacts')
+    .select('bolten_opportunity_id')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (data?.bolten_opportunity_id) {
+    void updateBoltenOpportunity(data.bolten_opportunity_id, { priority });
+  }
 }
 
 export async function updateContactNotes(
@@ -100,6 +135,17 @@ export async function updateContactNotes(
     .eq('id', id);
 
   if (error) throw error;
+
+  // Espelha a alteração na Observação do Bolten
+  const { data } = await supabase
+    .from('contacts')
+    .select('bolten_opportunity_id')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (data?.bolten_opportunity_id) {
+    void updateBoltenOpportunity(data.bolten_opportunity_id, { notes });
+  }
 }
 
 export async function deleteContact(id: string): Promise<void> {

@@ -1,0 +1,2 @@
+-- Migração já aplicada no banco remoto (histórico 20260724000200).
+-- Mantida apenas para reconciliar o histórico de migrações local/remoto.

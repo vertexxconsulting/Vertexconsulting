@@ -19,12 +19,13 @@ export const ContactStatuses = {
 
 export type Priority = 'Baixa' | 'Média' | 'Alta';
 
-export type View = 'Dashboard' | 'Contatos' | 'WhatsApp';
+export type View = 'Dashboard' | 'Contatos' | 'WhatsApp' | 'Conversas';
 
 export const Views = {
   Dashboard: 'Dashboard',
   Contacts: 'Contatos',
   WhatsApp: 'WhatsApp',
+  Conversations: 'Conversas',
 } as const;
 
 export type ConversationStatus = 'Ativo' | 'Aguardando' | 'Encerrada';
@@ -48,6 +49,9 @@ export interface ContactData {
   notes: string;
   whatsapp_sent: boolean;
   created_at: string;
+  bolten_contact_id?: string | null;
+  bolten_opportunity_id?: string | null;
+  bolten_status?: string | null;
 }
 
 export interface KanbanCardData {
@@ -95,4 +99,28 @@ export interface DashboardMetrics {
   newToday: number;
   whatsappSent: number;
   conversionRate: number;
+}
+
+// ==================== CHAT / CONVERSATIONS ====================
+
+export interface Conversation {
+  id: string;
+  contact_id: string | null;
+  phone: string;
+  name: string | null;
+  status: ConversationStatus;
+  last_message: string | null;
+  last_message_at: string | null;
+  unread_count: number;
+  created_at: string;
+}
+
+export interface Message {
+  id: string;
+  conversation_id: string;
+  sender: MessageSender;
+  text: string;
+  timestamp: string;
+  status: 'sent' | 'delivered' | 'read';
+  evolution_id: string | null;
 }

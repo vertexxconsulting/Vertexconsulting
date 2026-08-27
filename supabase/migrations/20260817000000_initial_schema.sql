@@ -82,7 +82,8 @@ CREATE TABLE IF NOT EXISTS public.bolten_webhook_events (
   event_type text NOT NULL,
   received_at timestamptz DEFAULT now() NOT NULL,
   processed_at timestamptz,
-  error text
+  error text,
+  processing_started_at timestamptz
 );
 
 ALTER TABLE ONLY public.conversations
@@ -119,6 +120,9 @@ BEGIN
   WHERE phone = p_phone;
 END;
 $$;
+
+REVOKE EXECUTE ON FUNCTION public.increment_unread(text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.mark_whatsapp_sent(uuid) FROM PUBLIC, anon, authenticated;
 
 -- ── RLS ─────────────────────────────────────────────────────
 

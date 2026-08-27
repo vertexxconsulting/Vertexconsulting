@@ -3,6 +3,7 @@ import {
   Target, Diamond, Brain, GraduationCap, BarChart3, Globe, ArrowUpRight, Check, X,
 } from 'lucide-react';
 import { createContact } from '../services/contactService';
+import { BOLTEN_CHAT_TRIGGER_MESSAGE, getBoltenWhatsAppLink } from '../services/boltenChat';
 import './LandingPage.css';
 
 function InstagramIcon() {
@@ -69,6 +70,7 @@ export default function LandingPage() {
     name: '', email: '', phone: '', company: '', service: '',
     has_site: '', instagram: '', message: '',
   });
+  const boltenChatLink = getBoltenWhatsAppLink();
 
   useEffect(() => {
     const onScroll = () => {
@@ -187,6 +189,12 @@ export default function LandingPage() {
     setFormOpen(false);
   };
 
+  const handleChatbotClick = () => {
+    if (!boltenChatLink) {
+      openForm();
+    }
+  };
+
   const scrollTo = (id: string) => {
     setMobileMenu(false);
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -250,9 +258,15 @@ export default function LandingPage() {
               e treinamentos para levar seu negócio ao próximo nível.
             </p>
             <div className="hero__actions">
-              <button className="btn btn--primary" onClick={openForm}>
-                Solicitar Consultoria
-              </button>
+              {boltenChatLink ? (
+                <a className="btn btn--primary" href={boltenChatLink} target="_blank" rel="noreferrer">
+                  Falar com o chatbot <WhatsAppIcon />
+                </a>
+              ) : (
+                <button className="btn btn--primary" onClick={handleChatbotClick}>
+                  Solicitar Consultoria
+                </button>
+              )}
               <button className="btn btn--secondary" onClick={() => scrollTo('services')}>
                 Nossos Serviços
               </button>
@@ -418,7 +432,18 @@ export default function LandingPage() {
               <button className="btn btn--primary" onClick={openForm}>
                 Abrir Formulário
               </button>
+              {boltenChatLink && (
+                <a className="btn btn--secondary" href={boltenChatLink} target="_blank" rel="noreferrer">
+                  <WhatsAppIcon /> Falar com o chatbot
+                </a>
+              )}
             </div>
+            {boltenChatLink && (
+              <p className="contact-trigger-note">
+                Ao abrir o WhatsApp, a mensagem de origem do site já estará preenchida para ativar o atendimento no Bolten:
+                <strong> “{BOLTEN_CHAT_TRIGGER_MESSAGE}”</strong>
+              </p>
+            )}
             <div className="contact-details">
               <div className="contact-detail">
                 <div className="contact-detail__label">Localização</div>

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildObservation,
   extractWebhookLead,
+  mapStatusToBolten,
   mapStatusFromBolten,
   validateLeadPayload,
 } from './bolten-utils.mjs';
@@ -54,6 +55,10 @@ describe('Bolten field mapping', () => {
     expect(mapStatusFromBolten('Doing', 'opportunity.transitioned')).toBe('Em contato');
     expect(mapStatusFromBolten('Done', 'opportunity.won')).toBe('Fechado Ganho');
     expect(mapStatusFromBolten('Done', 'opportunity.lost')).toBe('Fechado Perdido');
+    expect(mapStatusFromBolten('Done', 'opportunity.transitioned')).toBeNull();
+    expect(mapStatusToBolten('Novo')).toBe('To do');
+    expect(mapStatusToBolten('Em contato')).toBe('Doing');
+    expect(mapStatusToBolten('Fechado Ganho')).toBe('Done');
   });
 
   it('builds a readable observation while ignoring empty values', () => {
@@ -87,6 +92,38 @@ describe('extractWebhookLead', () => {
       email: 'ana@empresa.com',
       name: 'Ana Souza',
       phone: '5542999991234',
+      status: 'Em contato',
+    });
+  });
+
+  it('accepts the English Contact payload shape', () => {
+    const result = extractWebhookLead({
+      event_id: 'event-2',
+      event: 'opportunity.transitioned',
+      data: {
+        opportunity: {
+          id: 'opp-2',
+          attributes: {
+            Name: 'John Smith',
+            Email: 'john@example.com',
+            Status: 'Doing',
+          },
+          Contact: {
+            attributes: {
+              Name: 'John Smith',
+              Phone: '+15551234567',
+            },
+          },
+        },
+      },
+    });
+
+    expect(result).toMatchObject({
+      eventId: 'event-2',
+      opportunityId: 'opp-2',
+      email: 'john@example.com',
+      name: 'John Smith',
+      phone: '+15551234567',
       status: 'Em contato',
     });
   });

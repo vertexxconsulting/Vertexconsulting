@@ -18,3 +18,7 @@ O payload documentado coloca os atributos configurados diretamente em `data.oppo
 ## Decisões aplicadas
 
 A chave Bolten não é mais lida pelo bundle do navegador: o frontend chama apenas `/api/bolten`, e o endpoint server-side usa as variáveis privadas `BOLTEN_API_KEY`, `BOLTEN_CONTACT_COMPONENT_ID` e `BOLTEN_KANBAN_COMPONENT_ID`. O webhook usa comparação em tempo constante para o `X-API-KEY`, registra o `event_id` em `bolten_webhook_events` e retorna erro 502 quando a sincronização falha, permitindo o retry do Bolten. Os registros locais passaram a guardar `bolten_sync_status`, `bolten_sync_error` e `bolten_last_synced_at`.
+
+A documentação oficial de [Gestão de Conversões](https://bolten.gitbook.io/bolten-docs/ferramentas/gestao-de-conversoes.md) esclarece que a mensagem de gatilho é enviada pelo Lead ao WhatsApp conectado ao Bolten. Por isso, o site não tenta disparar a mensagem via Evolution: ele abre um link `wa.me` ou o link oficial de Ações do Bolten com a frase de origem já preenchida. O destino é configurado por `VITE_BOLTEN_WHATSAPP_NUMBER` ou `VITE_BOLTEN_WHATSAPP_LINK`.
+
+O claim de webhook usa `processing_started_at` com lease de 60 segundos para impedir processamento concorrente e permitir retomada após uma falha. As funções RPC privilegiadas do Supabase não ficam executáveis por `PUBLIC`, `anon` ou `authenticated`; somente o backend com a chave apropriada deve usá-las.

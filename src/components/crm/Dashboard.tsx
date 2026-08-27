@@ -19,7 +19,7 @@ export default function Dashboard() {
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     totalLeads: 0,
     newToday: 0,
-    whatsappSent: 0,
+    boltenSynced: 0,
     conversionRate: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -39,11 +39,11 @@ export default function Dashboard() {
       const today = new Date().toISOString().split('T')[0];
       const totalLeads = data.length;
       const newToday = data.filter((c) => c.created_at?.split('T')[0] === today).length;
-      const whatsappSent = data.filter((c) => c.whatsapp_sent).length;
+      const boltenSynced = data.filter((c) => c.bolten_sync_status === 'synced').length;
       const closed = data.filter((c) => c.status === 'Fechado Ganho').length;
       const conversionRate = totalLeads > 0 ? Math.round((closed / totalLeads) * 100) : 0;
 
-      setMetrics({ totalLeads, newToday, whatsappSent, conversionRate });
+      setMetrics({ totalLeads, newToday, boltenSynced, conversionRate });
     } catch {
       setError('Não foi possível carregar os leads. Verifique sua sessão e tente novamente.');
     } finally {
@@ -84,8 +84,8 @@ export default function Dashboard() {
           <div className="metric-card__value">{metrics.newToday}</div>
         </div>
         <div className="metric-card">
-          <div className="metric-card__label">WhatsApp Enviados</div>
-          <div className="metric-card__value">{metrics.whatsappSent}</div>
+          <div className="metric-card__label">Sincronizados no Bolten</div>
+          <div className="metric-card__value">{metrics.boltenSynced}</div>
         </div>
         <div className="metric-card">
           <div className="metric-card__label">Taxa de Conversão</div>
@@ -113,7 +113,7 @@ export default function Dashboard() {
                 <th>Telefone</th>
                 <th>Serviço</th>
                 <th>Status</th>
-                <th>WhatsApp</th>
+                <th>Bolten</th>
                 <th>Data</th>
               </tr>
             </thead>
@@ -128,7 +128,7 @@ export default function Dashboard() {
                       {c.status}
                     </span>
                   </td>
-                  <td>{c.whatsapp_sent ? 'Enviado' : 'Pendente'}</td>
+                  <td>{c.bolten_sync_status === 'synced' ? 'Sincronizado' : 'Pendente'}</td>
                   <td style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
                     {formatDate(c.created_at)}
                   </td>

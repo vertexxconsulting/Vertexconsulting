@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { fetchContacts, updateContact, retryContactBoltenSync, deleteContact } from '../../services/contactService';
-import { sendLeadNotification } from '../../services/evolutionApi';
-import { supabase } from '../../services/supabaseClient';
 import { ContactStatuses, type ContactStatus, type ContactData } from '../../types';
 
 function InstagramIcon() {
@@ -147,20 +145,6 @@ export default function Contacts() {
     }
   };
 
-  const handleResendWhatsApp = async (contact: ContactData) => {
-    if (!contact.phone) return;
-    try {
-      const sent = await sendLeadNotification(contact.name, contact.phone);
-      if (!sent) throw new Error('WhatsApp não enviado');
-      const { error: updateError } = await supabase.from('contacts').update({ whatsapp_sent: true }).eq('id', contact.id);
-      if (updateError) throw updateError;
-      await loadContacts();
-    } catch (resendError) {
-      console.error('Erro ao reenviar WhatsApp:', resendError);
-      setError('Não foi possível enviar o WhatsApp. Verifique a conexão e tente novamente.');
-    }
-  };
-
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este contato?')) return;
     try {
@@ -232,7 +216,6 @@ export default function Contacts() {
                 <th>Empresa</th>
                 <th>Serviço</th>
                 <th>Status</th>
-                <th>WhatsApp</th>
                 <th>Bolten</th>
                 <th>Data</th>
               </tr>
@@ -292,22 +275,6 @@ export default function Contacts() {
                     <span className={`status-badge ${getStatusClass(c.status)}`}>
                       {c.status}
                     </span>
-                  </td>
-                  <td>
-                    {c.whatsapp_sent ? (
-                      <span style={{ color: '#81c784', fontSize: '0.8rem' }}>Enviado</span>
-                    ) : (
-                      <button
-                        className="btn btn--primary"
-                        style={{ padding: '4px 10px', fontSize: '0.72rem' }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleResendWhatsApp(c);
-                        }}
-                      >
-                        Enviar
-                      </button>
-                    )}
                   </td>
                   <td>
                     <span className={`sync-badge sync-badge--${c.bolten_sync_status || 'pending'}`}>

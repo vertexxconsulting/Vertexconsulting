@@ -3,6 +3,7 @@ import { extractWebhookLead } from './bolten-utils.mjs';
 
 const DEFAULT_SUPABASE_URL = 'https://ognaofyqubojbokohljr.supabase.co';
 const REQUEST_TIMEOUT_MS = 10000;
+const WEBHOOK_LEASE_MS = 60000;
 
 function getSupabaseRestUrl() {
   return `${(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, '')}/rest/v1`;
@@ -67,6 +68,21 @@ async function findExistingContact(lead, serviceKey) {
     if (matches[0]?.id) return matches[0].id;
   }
 
+  const phoneDigits = String(lead.phone || '').replace(/\D/g, '');
+  const phoneSuffix = phoneDigits.slice(-8);
+  if (phoneSuffix.length === 8) {
+    const byPhone = await fetchWithTimeout(
+      `${base}/contacts?phone=ilike.*${encodeURIComponent(phoneSuffix)}*&select=id,phone&limit=20`,
+      { headers },
+    );
+    if (!byPhone.ok) throw new Error(`Busca local por telefone: ${byPhone.status}`);
+    const matches = await byPhone.json();
+    const match = Array.isArray(matches) && matches.find((contact) => (
+      String(contact.phone || '').replace(/\D/g, '').endsWith(phoneSuffix)
+    ));
+    if (match?.id) return match.id;
+  }
+
   return null;
 }
 
@@ -74,12 +90,13 @@ function buildLocalRow(lead, { includeCreateFields = false } = {}) {
   const row = {
     bolten_opportunity_id: lead.opportunityId || null,
     bolten_status: lead.rawStatus || null,
-    status: lead.status,
     priority: lead.priority,
     bolten_sync_status: 'synced',
     bolten_sync_error: null,
     bolten_last_synced_at: new Date().toISOString(),
   };
+
+  if (lead.status) row.status = lead.status;
 
   if (lead.contactId) row.bolten_contact_id = lead.contactId;
   if (lead.name) row.name = lead.name;
@@ -110,20 +127,34 @@ async function claimWebhookEvent(lead, serviceKey) {
 
   const base = getSupabaseRestUrl();
   const headers = supabaseHeaders(serviceKey);
+  const now = new Date().toISOString();
+  const leaseCutoff = new Date(Date.now() - WEBHOOK_LEASE_MS).toISOString();
   const existing = await fetchWithTimeout(
-    `${base}/bolten_webhook_events?event_id=eq.${encodeURIComponent(lead.eventId)}&select=event_id,processed_at&limit=1`,
+    `${base}/bolten_webhook_events?event_id=eq.${encodeURIComponent(lead.eventId)}&select=event_id,processed_at,processing_started_at&limit=1`,
     { headers },
   );
   if (!existing.ok) throw new Error(`Consulta de idempotência: ${existing.status}`);
   const records = await existing.json();
 
   if (records[0]?.processed_at) return { duplicate: true };
-  if (records.length > 0) return { duplicate: false };
+  if (records.length > 0) {
+    const claim = await fetchWithTimeout(
+      `${base}/bolten_webhook_events?event_id=eq.${encodeURIComponent(lead.eventId)}&processed_at=is.null&or=${encodeURIComponent(`(processing_started_at.is.null,processing_started_at.lt.${leaseCutoff})`)}&select=event_id&limit=1`,
+      {
+        method: 'PATCH',
+        headers: supabaseHeaders(serviceKey, 'return=representation'),
+        body: JSON.stringify({ processing_started_at: now, error: null }),
+      },
+    );
+    if (!claim.ok) throw new Error(`Claim de idempotência: ${claim.status}`);
+    const claimed = await claim.json();
+    return { duplicate: !Array.isArray(claimed) || claimed.length === 0 };
+  }
 
   const created = await fetchWithTimeout(`${base}/bolten_webhook_events`, {
     method: 'POST',
     headers: supabaseHeaders(serviceKey, 'return=minimal'),
-    body: JSON.stringify({ event_id: lead.eventId, event_type: lead.eventType }),
+    body: JSON.stringify({ event_id: lead.eventId, event_type: lead.eventType, processing_started_at: now }),
   });
   if (created.ok) return { duplicate: false };
   if (created.status === 409) return { duplicate: true };
@@ -132,17 +163,19 @@ async function claimWebhookEvent(lead, serviceKey) {
 
 async function completeWebhookEvent(lead, serviceKey, error = null) {
   if (!lead.eventId) return;
-  await fetchWithTimeout(
+  const completed = await fetchWithTimeout(
     `${getSupabaseRestUrl()}/bolten_webhook_events?event_id=eq.${encodeURIComponent(lead.eventId)}`,
     {
       method: 'PATCH',
       headers: supabaseHeaders(serviceKey),
       body: JSON.stringify({
         processed_at: error ? null : new Date().toISOString(),
+        processing_started_at: null,
         error: error ? String(error).slice(0, 500) : null,
       }),
     },
   );
+  if (!completed.ok) throw new Error(`Conclusão de idempotência: ${completed.status}`);
 }
 
 export default async function handler(req, res) {

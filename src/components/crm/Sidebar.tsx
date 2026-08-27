@@ -10,8 +10,6 @@ interface SidebarProps {
 const navItems: { view: View; label: string }[] = [
   { view: Views.Dashboard, label: 'Dashboard' },
   { view: Views.Contacts, label: 'Contatos' },
-  { view: Views.Conversations, label: 'Conversas' },
-  { view: Views.WhatsApp, label: 'WhatsApp' },
 ];
 
 export default function Sidebar({ currentView, setCurrentView, isOpen, onClose }: SidebarProps) {

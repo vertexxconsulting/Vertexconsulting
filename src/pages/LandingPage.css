@@ -1234,3 +1234,24 @@
     transform: none !important;
   }
 }
+
+
+.contact-trigger-note {
+  max-width: 560px;
+  margin-top: 18px;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+
+.contact-trigger-note strong {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.hero__actions .btn svg,
+.contact-cta-row .btn svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+}

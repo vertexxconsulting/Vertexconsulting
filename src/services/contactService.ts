@@ -1,5 +1,4 @@
 import { supabase } from './supabaseClient';
-import { sendLeadNotification } from './evolutionApi';
 import { syncLeadToBolten, updateBoltenOpportunity, type BoltenLeadData } from './boltenService';
 import type { ContactData, ContactStatus, Priority, DashboardMetrics } from '../types';
 
@@ -36,7 +35,6 @@ async function markBoltenSyncError(id: string, message: string) {
 
 export async function createContact(data: PublicContactData): Promise<{
   contact: ContactData;
-  whatsappSent: boolean;
   boltenSynced: boolean;
 }> {
   const id = crypto.randomUUID();
@@ -80,16 +78,7 @@ export async function createContact(data: PublicContactData): Promise<{
     localContact.bolten_last_synced_at = new Date().toISOString();
   }
 
-  let whatsappSent = false;
-  if (data.phone) {
-    whatsappSent = await sendLeadNotification(data.name, data.phone);
-    if (whatsappSent) {
-      await supabase.rpc('mark_whatsapp_sent', { p_contact_id: id });
-      localContact.whatsapp_sent = true;
-    }
-  }
-
-  return { contact: localContact, whatsappSent, boltenSynced: Boolean(bolten?.localRecorded) };
+  return { contact: localContact, boltenSynced: Boolean(bolten?.localRecorded) };
 }
 
 export async function retryContactBoltenSync(contact: ContactData): Promise<boolean> {
@@ -179,9 +168,9 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
 
   const totalLeads = contacts.length;
   const newToday = contacts.filter((c) => c.created_at?.split('T')[0] === today).length;
-  const whatsappSent = contacts.filter((c) => c.whatsapp_sent).length;
+  const boltenSynced = contacts.filter((c) => c.bolten_sync_status === 'synced').length;
   const closed = contacts.filter((c) => c.status === 'Fechado Ganho').length;
   const conversionRate = totalLeads > 0 ? (closed / totalLeads) * 100 : 0;
 
-  return { totalLeads, newToday, whatsappSent, conversionRate };
+  return { totalLeads, newToday, boltenSynced, conversionRate };
 }

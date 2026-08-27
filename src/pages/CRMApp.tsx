@@ -4,8 +4,6 @@ import { supabase } from '../services/supabaseClient';
 import Sidebar from '../components/crm/Sidebar';
 import Dashboard from '../components/crm/Dashboard';
 import Contacts from '../components/crm/Contacts';
-import WhatsAppPanel from '../components/crm/WhatsAppPanel';
-import ChatView from '../components/crm/chat/ChatView';
 import { Views, type View } from '../types';
 import './CRMApp.css';
 
@@ -25,10 +23,6 @@ export default function CRMApp() {
         return <Dashboard />;
       case Views.Contacts:
         return <Contacts />;
-      case Views.Conversations:
-        return <ChatView />;
-      case Views.WhatsApp:
-        return <WhatsAppPanel />;
       default:
         return <Dashboard />;
     }
@@ -57,7 +51,7 @@ export default function CRMApp() {
             <button className="crm__logout-btn" onClick={handleLogout}>Sair</button>
           </div>
         </header>
-        <main className={`crm__content${currentView === Views.Conversations ? ' crm__content--chat' : ''}`}>
+        <main className="crm__content">
           {renderView()}
         </main>
       </div>

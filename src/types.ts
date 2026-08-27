@@ -19,13 +19,11 @@ export const ContactStatuses = {
 
 export type Priority = 'Baixa' | 'Média' | 'Alta';
 
-export type View = 'Dashboard' | 'Contatos' | 'WhatsApp' | 'Conversas';
+export type View = 'Dashboard' | 'Contatos';
 
 export const Views = {
   Dashboard: 'Dashboard',
   Contacts: 'Contatos',
-  WhatsApp: 'WhatsApp',
-  Conversations: 'Conversas',
 } as const;
 
 export type ConversationStatus = 'Ativo' | 'Aguardando' | 'Encerrada';
@@ -102,7 +100,7 @@ export interface MessageData {
 export interface DashboardMetrics {
   totalLeads: number;
   newToday: number;
-  whatsappSent: number;
+  boltenSynced: number;
   conversionRate: number;
 }
 

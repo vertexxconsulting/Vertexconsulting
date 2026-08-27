@@ -3,6 +3,8 @@ import { buildObservation, validateLeadPayload, mapStatusToBolten } from './bolt
 const BOLTEN_BASE = 'https://app.bolten.io';
 const DEFAULT_SUPABASE_URL = 'https://ognaofyqubojbokohljr.supabase.co';
 const REQUEST_TIMEOUT_MS = 12000;
+const BOLTEN_MIN_INTERVAL_MS = 1100;
+let boltenRateGate = Promise.resolve();
 
 function getSupabaseRestUrl() {
   return `${(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, '')}/rest/v1`;
@@ -32,6 +34,26 @@ async function fetchWithTimeout(url, init = {}) {
   }
 }
 
+async function fetchBolten(url, init = {}) {
+  const run = boltenRateGate.then(async () => {
+    const response = await fetchWithTimeout(url, init);
+    if (response.status === 429) {
+      const retryAfter = Number(response.headers.get('retry-after'));
+      const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
+        ? Math.min(retryAfter * 1000, 10000)
+        : BOLTEN_MIN_INTERVAL_MS;
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      return fetchWithTimeout(url, init);
+    }
+    return response;
+  });
+  boltenRateGate = run.then(
+    () => new Promise((resolve) => setTimeout(resolve, BOLTEN_MIN_INTERVAL_MS)),
+    () => undefined,
+  );
+  return run;
+}
+
 function jsonResponse(res, status, body) {
   return res.status(status).json(body);
 }
@@ -43,6 +65,32 @@ function boltenHeaders(apiKey) {
   };
 }
 
+function isUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function supabaseServiceHeaders(serviceKey, prefer) {
+  return {
+    apikey: serviceKey,
+    Authorization: `Bearer ${serviceKey}`,
+    'Content-Type': 'application/json',
+    ...(prefer ? { Prefer: prefer } : {}),
+  };
+}
+
+async function findLocalContact(localContactId) {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceKey) return null;
+
+  const response = await fetchWithTimeout(
+    `${getSupabaseRestUrl()}/contacts?id=eq.${encodeURIComponent(localContactId)}&select=id,name,email,phone&limit=1`,
+    { headers: supabaseServiceHeaders(serviceKey) },
+  );
+  if (!response.ok) throw new Error(`Consulta do contato local (${response.status})`);
+  const contacts = await response.json();
+  return Array.isArray(contacts) ? contacts[0] || null : null;
+}
+
 async function updateLocalSyncState(localContactId, patch) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!localContactId || !serviceKey) return false;
@@ -51,20 +99,17 @@ async function updateLocalSyncState(localContactId, patch) {
     `${getSupabaseRestUrl()}/contacts?id=eq.${encodeURIComponent(localContactId)}`,
     {
       method: 'PATCH',
-      headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
-        'Content-Type': 'application/json',
+        headers: supabaseServiceHeaders(serviceKey, 'return=representation'),
+        body: JSON.stringify(patch),
       },
-      body: JSON.stringify(patch),
-    },
   );
 
   if (!response.ok) {
     console.error('Bolten: não foi possível atualizar o estado local', response.status, await response.text());
     return false;
   }
-  return true;
+  const updated = await response.json();
+  return Array.isArray(updated) && updated.length === 1;
 }
 
 async function isAuthenticatedRequest(req) {
@@ -87,7 +132,7 @@ async function isAuthenticatedRequest(req) {
 }
 
 async function createBoltenContact(data, headers, componentId) {
-  const response = await fetchWithTimeout(
+  const response = await fetchBolten(
     `${BOLTEN_BASE}/contact/api/v1/${componentId}/contacts`,
     {
       method: 'POST',
@@ -110,7 +155,7 @@ async function createBoltenContact(data, headers, componentId) {
 }
 
 async function createBoltenOpportunity(data, headers, componentId) {
-  const response = await fetchWithTimeout(
+  const response = await fetchBolten(
     `${BOLTEN_BASE}/kanban/api/v1/${componentId}/opportunities`,
     {
       method: 'POST',
@@ -137,7 +182,7 @@ async function createBoltenOpportunity(data, headers, componentId) {
 }
 
 async function linkBoltenContact(opportunityId, contactId, headers, componentId) {
-  const response = await fetchWithTimeout(
+  const response = await fetchBolten(
     `${BOLTEN_BASE}/kanban/api/v1/${componentId}/opportunities/${opportunityId}/contact`,
     {
       method: 'POST',
@@ -171,7 +216,11 @@ export default async function handler(req, res) {
 
     const attributes = {};
     if (typeof body.status === 'string' && body.status.trim()) {
-      attributes.Status = mapStatusToBolten(body.status.trim());
+      attributes.Status = mapStatusToBolten(body.status.trim(), {
+        new: process.env.BOLTEN_STATUS_NEW,
+        inProgress: process.env.BOLTEN_STATUS_IN_PROGRESS,
+        done: process.env.BOLTEN_STATUS_DONE,
+      });
     }
     if (typeof body.priority === 'string' && body.priority.trim()) {
       attributes.Prioridade = body.priority.trim();
@@ -182,7 +231,7 @@ export default async function handler(req, res) {
     }
 
     try {
-      const response = await fetchWithTimeout(
+      const response = await fetchBolten(
         `${BOLTEN_BASE}/kanban/api/v1/${kanbanComponentId}/opportunities/${encodeURIComponent(opportunityId)}`,
         {
           method: 'PATCH',
@@ -216,9 +265,20 @@ export default async function handler(req, res) {
 
   const data = validation.data;
   const localContactId = typeof body.localContactId === 'string' ? body.localContactId.trim() : '';
+  if (!isUuid(localContactId)) {
+    return jsonResponse(res, 400, { error: 'localContactId válido é obrigatório' });
+  }
   const headers = boltenHeaders(apiKey);
 
   try {
+    const localContact = await findLocalContact(localContactId);
+    if (!localContact) {
+      return jsonResponse(res, 404, { error: 'Lead local não encontrado' });
+    }
+    if (localContact.email !== data.email || (localContact.phone || '') !== data.phone) {
+      return jsonResponse(res, 409, { error: 'O lead local não corresponde aos dados enviados' });
+    }
+
     const contactId = await createBoltenContact(data, headers, contactComponentId);
     const opportunityId = await createBoltenOpportunity(data, headers, kanbanComponentId);
     await linkBoltenContact(opportunityId, contactId, headers, kanbanComponentId);

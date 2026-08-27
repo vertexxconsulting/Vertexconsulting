@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ArrowDown,
+  ArrowLeft,
   ArrowUpRight,
   BriefcaseBusiness,
   Building2,
@@ -465,7 +466,7 @@ export default function Home() {
               <div><span>01</span><strong>conversa<br />estratégica</strong></div>
               <div><span>∞</span><strong>visão de<br />longo prazo</strong></div>
               <div><span>→</span><strong>ação com<br />direção</strong></div>
-              <a href="https://www.youtube.com/results?search_query=Papo+de+Valor+Alexandre+Azeredo" target="_blank" rel="noreferrer" className="podcast-link"><Play size={16} fill="currentColor" aria-hidden="true" /> Ouvir o Papo de Valor <ArrowUpRight size={15} /></a>
+              <a href="https://www.youtube.com/@papodevalorpodcast10" target="_blank" rel="noreferrer" className="podcast-link"><Play size={16} fill="currentColor" aria-hidden="true" /> Ouvir o Papo de Valor <ArrowUpRight size={15} /></a>
             </div>
           </div>
         </section>
@@ -488,7 +489,7 @@ export default function Home() {
               <p>Hoje, utilizo esse repertório para ajudar profissionais de tecnologia a acelerarem suas carreiras e se prepararem para posições de maior responsabilidade. Tecnologia só se torna estratégica quando consegue gerar valor para o negócio.</p>
               <div className="about-actions">
                 <a className="button button-dark" href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer">Ver LinkedIn <Linkedin size={17} /></a>
-                <a className="button button-outline" href="https://www.youtube.com/results?search_query=Papo+de+Valor+Alexandre+Azeredo" target="_blank" rel="noreferrer">Ouvir Podcast <Play size={16} fill="currentColor" /></a>
+                <a className="button button-outline" href="https://www.youtube.com/@papodevalorpodcast10" target="_blank" rel="noreferrer">Ouvir Podcast <Play size={16} fill="currentColor" /></a>
               </div>
             </div>
           </div>
@@ -540,7 +541,7 @@ export default function Home() {
         <div
           className={`contact-modal ${contactOpen ? "contact-modal--open" : "contact-modal--closing"}`}
           role="presentation"
-          onMouseDown={(event) => {
+          onClick={(event) => {
             if (event.target === event.currentTarget) closeContactModal();
           }}
         >
@@ -559,7 +560,10 @@ export default function Home() {
                 <h3>Seu próximo movimento já começou.</h3>
                 <p>Obrigado por compartilhar seu momento. Alexandre entrará em contato para encontrar o melhor caminho para você.</p>
                 <div className="success-next-step"><span>Próximo passo</span><strong>Retorno em até 48h</strong></div>
-                <button type="button" className="text-link dark-link" onClick={() => setSubmitted(false)}>Enviar outra solicitação <ArrowUpRight size={16} /></button>
+                <div className="success-actions">
+                  <button type="button" className="button button-dark" onClick={closeContactModal}>Voltar ao site <ArrowLeft size={16} /></button>
+                  <button type="button" className="text-link dark-link" onClick={() => setSubmitted(false)}>Enviar outra solicitação <ArrowUpRight size={16} /></button>
+                </div>
               </div>
             ) : (
               <>
@@ -576,7 +580,7 @@ export default function Home() {
                   <div className="consent-field form-field-wide">
                     <input id="consent" name="consent" type="checkbox" required aria-describedby="consent-copy" />
                     <label className="sr-only" htmlFor="consent">Aceito os termos de uso e a política de privacidade</label>
-                    <span id="consent-copy">Li e aceito os <a href="#top">Termos de Uso</a> e a <a href="#top">Política de Privacidade</a>.</span>
+                    <span id="consent-copy">Li e aceito os <a href="/termos-de-uso">Termos de Uso</a> e a <a href="/politica-de-privacidade">Política de Privacidade</a>.</span>
                   </div>
                   <button className="button button-gold form-submit" type="submit">Agendar uma conversa <ArrowUpRight size={17} /></button>
                   <small>Ao clicar, o WhatsApp abrirá com suas informações organizadas para o Alexandre.</small>
@@ -589,11 +593,11 @@ export default function Home() {
 
       <footer className="site-footer">
         <div className="container footer-grid">
-          <div className="footer-brand"><a className="brand footer-logo" href="#top"><span className="brand-logo-wrap"><img src={logoDarkSrc} alt="Logo Alexandre Azeredo" className="brand-logo" /></span><span className="brand-copy"><strong>Alexandre Azeredo</strong><span>Mentor Executivo · CIO Advisor</span></span></a><p>Estratégia que posiciona.<br />Liderança que transforma.</p><div className="social-links"><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a><a href="https://www.instagram.com/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={17} /></a><a href="https://www.youtube.com/results?search_query=Papo+de+Valor+Alexandre+Azeredo" target="_blank" rel="noreferrer" aria-label="Podcast Papo de Valor"><Mic2 size={17} /></a></div></div>
+          <div className="footer-brand"><a className="brand footer-logo" href="#top"><span className="brand-logo-wrap"><img src={logoDarkSrc} alt="Logo Alexandre Azeredo" className="brand-logo" /></span><span className="brand-copy"><strong>Alexandre Azeredo</strong><span>Mentor Executivo · CIO Advisor</span></span></a><p>Estratégia que posiciona.<br />Liderança que transforma.</p><div className="social-links"><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a><a href="https://www.instagram.com/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={17} /></a><a href="https://www.youtube.com/@papodevalorpodcast10" target="_blank" rel="noreferrer" aria-label="Podcast Papo de Valor"><Mic2 size={17} /></a></div></div>
           <div className="footer-column"><p className="footer-label">Explorar</p><a href="#sobre">Sobre Alexandre</a><a href="#atuacao">Atuação</a><a href="#resultados">Resultados</a><a href="#faq">Perguntas frequentes</a></div>
           <div className="footer-column"><p className="footer-label">Contato</p><a href="mailto:contato@alexandreazeredo.com.br"><Mail size={15} /> contato@alexandreazeredo.com.br</a><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer"><Linkedin size={15} /> linkedin.com/in/alexandreazeredo</a></div>
         </div>
-        <div className="container footer-bottom"><span>© 2026 Alexandre Azeredo. Todos os direitos reservados.</span><span><a href="#top">Política de Privacidade</a><i /> <a href="#top">Termos de Uso</a></span></div>
+        <div className="container footer-bottom"><span>© 2026 Alexandre Azeredo. Todos os direitos reservados.</span><span><a href="/politica-de-privacidade">Política de Privacidade</a><i /> <a href="/termos-de-uso">Termos de Uso</a></span></div>
       </footer>
     </div>
   );

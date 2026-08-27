@@ -24,6 +24,9 @@ CREATE TABLE IF NOT EXISTS public.contacts (
     bolten_contact_id  uuid,
     bolten_opportunity_id uuid,
     bolten_status      text,
+    bolten_sync_status text DEFAULT 'pending'::text NOT NULL,
+    bolten_sync_error text,
+    bolten_last_synced_at timestamptz,
     PRIMARY KEY (id)
 );
 
@@ -71,6 +74,17 @@ CREATE INDEX IF NOT EXISTS idx_conversations_phone
 CREATE INDEX IF NOT EXISTS idx_messages_conversation_id
   ON public.messages (conversation_id);
 
+CREATE INDEX IF NOT EXISTS idx_contacts_bolten_sync_status
+  ON public.contacts (bolten_sync_status);
+
+CREATE TABLE IF NOT EXISTS public.bolten_webhook_events (
+  event_id text PRIMARY KEY,
+  event_type text NOT NULL,
+  received_at timestamptz DEFAULT now() NOT NULL,
+  processed_at timestamptz,
+  error text
+);
+
 ALTER TABLE ONLY public.conversations
   ADD CONSTRAINT conversations_contact_id_fkey
   FOREIGN KEY (contact_id) REFERENCES public.contacts(id) ON DELETE SET NULL;
@@ -111,6 +125,8 @@ $$;
 ALTER TABLE public.contacts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.bolten_webhook_events ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.bolten_webhook_events FROM anon, authenticated;
 
 DROP POLICY IF EXISTS "contacts_select_auth" ON public.contacts;
 CREATE POLICY "contacts_select_auth" ON public.contacts

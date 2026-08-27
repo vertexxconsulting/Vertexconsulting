@@ -32,6 +32,8 @@ export type ConversationStatus = 'Ativo' | 'Aguardando' | 'Encerrada';
 
 export type MessageSender = 'user' | 'agent';
 
+export type BoltenSyncStatus = 'pending' | 'synced' | 'error';
+
 // ==================== INTERFACES ====================
 
 export interface ContactData {
@@ -52,6 +54,9 @@ export interface ContactData {
   bolten_contact_id?: string | null;
   bolten_opportunity_id?: string | null;
   bolten_status?: string | null;
+  bolten_sync_status?: BoltenSyncStatus | null;
+  bolten_sync_error?: string | null;
+  bolten_last_synced_at?: string | null;
 }
 
 export interface KanbanCardData {
@@ -91,7 +96,7 @@ export interface MessageData {
   text: string;
   timestamp: string;
   sender: MessageSender;
-  status: 'sent' | 'delivered' | 'read';
+  status: 'sent' | 'delivered' | 'read' | 'failed';
 }
 
 export interface DashboardMetrics {
@@ -121,6 +126,6 @@ export interface Message {
   sender: MessageSender;
   text: string;
   timestamp: string;
-  status: 'sent' | 'delivered' | 'read';
+  status: 'sent' | 'delivered' | 'read' | 'failed';
   evolution_id: string | null;
 }

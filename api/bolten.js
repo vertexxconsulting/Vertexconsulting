@@ -1,14 +1,152 @@
-const BOLTEN_BASE = 'https://app.bolten.io';
+import { buildObservation, validateLeadPayload, mapStatusToBolten } from './bolten-utils.mjs';
 
-function mapStatusToBolten(status) {
-  switch (status) {
-    case 'Novo': return 'Pendente';
-    case 'Em contato':
-    case 'Apresentação':
-    case 'Negociação': return 'Em andamento';
-    case 'Fechado Ganho':
-    case 'Fechado Perdido': return 'Finalizado';
-    default: return status;
+const BOLTEN_BASE = 'https://app.bolten.io';
+const DEFAULT_SUPABASE_URL = 'https://ognaofyqubojbokohljr.supabase.co';
+const REQUEST_TIMEOUT_MS = 12000;
+
+function getSupabaseRestUrl() {
+  return `${(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, '')}/rest/v1`;
+}
+
+function getSupabaseBaseUrl() {
+  return getSupabaseRestUrl().replace(/\/rest\/v1$/, '');
+}
+
+function parseBody(body) {
+  if (!body) return {};
+  if (typeof body === 'object') return body;
+  try {
+    return JSON.parse(body);
+  } catch {
+    return {};
+  }
+}
+
+async function fetchWithTimeout(url, init = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function jsonResponse(res, status, body) {
+  return res.status(status).json(body);
+}
+
+function boltenHeaders(apiKey) {
+  return {
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
+  };
+}
+
+async function updateLocalSyncState(localContactId, patch) {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!localContactId || !serviceKey) return false;
+
+  const response = await fetchWithTimeout(
+    `${getSupabaseRestUrl()}/contacts?id=eq.${encodeURIComponent(localContactId)}`,
+    {
+      method: 'PATCH',
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(patch),
+    },
+  );
+
+  if (!response.ok) {
+    console.error('Bolten: não foi possível atualizar o estado local', response.status, await response.text());
+    return false;
+  }
+  return true;
+}
+
+async function isAuthenticatedRequest(req) {
+  const authorization = req.headers?.authorization;
+  const token = typeof authorization === 'string' && authorization.startsWith('Bearer ')
+    ? authorization.slice(7)
+    : '';
+  const apiKey = process.env.SUPABASE_ANON_KEY
+    || process.env.VITE_SUPABASE_ANON_KEY
+    || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!token || !apiKey) return false;
+
+  const response = await fetchWithTimeout(`${getSupabaseBaseUrl()}/auth/v1/user`, {
+    headers: {
+      apikey: apiKey,
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.ok;
+}
+
+async function createBoltenContact(data, headers, componentId) {
+  const response = await fetchWithTimeout(
+    `${BOLTEN_BASE}/contact/api/v1/${componentId}/contacts`,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        attributes: {
+          Nome: data.name,
+          'E-mail': data.email,
+          Telefone: data.phone || '',
+        },
+      }),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Contato Bolten (${response.status}): ${await response.text()}`);
+  }
+  const contact = await response.json();
+  if (!contact?.id) throw new Error('Bolten não retornou o ID do contato');
+  return contact.id;
+}
+
+async function createBoltenOpportunity(data, headers, componentId) {
+  const response = await fetchWithTimeout(
+    `${BOLTEN_BASE}/kanban/api/v1/${componentId}/opportunities`,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        attributes: {
+          Nome: data.name,
+          'E-mail': data.email,
+          Telefone: data.phone || '',
+          Empresa: data.company,
+          Serviço: data.service,
+          Prioridade: 'Média',
+          Observação: buildObservation(data),
+        },
+      }),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Oportunidade Bolten (${response.status}): ${await response.text()}`);
+  }
+  const opportunity = await response.json();
+  if (!opportunity?.id) throw new Error('Bolten não retornou o ID da oportunidade');
+  return opportunity.id;
+}
+
+async function linkBoltenContact(opportunityId, contactId, headers, componentId) {
+  const response = await fetchWithTimeout(
+    `${BOLTEN_BASE}/kanban/api/v1/${componentId}/opportunities/${opportunityId}/contact`,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ id: contactId }),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Vínculo Bolten (${response.status}): ${await response.text()}`);
   }
 }
 
@@ -19,134 +157,94 @@ export default async function handler(req, res) {
 
   if (!apiKey || !contactComponentId || !kanbanComponentId) {
     console.error('Bolten: configuração ausente no servidor');
-    return res.status(500).json({ error: 'Bolten não configurado no servidor' });
+    return jsonResponse(res, 500, { error: 'Bolten não configurado no servidor' });
   }
 
-  const headers = {
-    Authorization: `Bearer ${apiKey}`,
-    'Content-Type': 'application/json',
-  };
+  const body = parseBody(req.body);
 
   if (req.method === 'PATCH') {
-    const { opportunityId, status, priority, notes } = req.body ?? {};
-
-    if (!opportunityId) {
-      return res.status(400).json({ error: 'opportunityId é obrigatório' });
+    if (!(await isAuthenticatedRequest(req).catch(() => false))) {
+      return jsonResponse(res, 401, { error: 'Sessão do CRM inválida' });
     }
+    const opportunityId = typeof body.opportunityId === 'string' ? body.opportunityId.trim() : '';
+    if (!opportunityId) return jsonResponse(res, 400, { error: 'opportunityId é obrigatório' });
 
     const attributes = {};
-    if (status) attributes.Status = mapStatusToBolten(status);
-    if (priority) attributes.Prioridade = priority;
-    if (typeof notes === 'string') attributes.Observação = notes;
-
+    if (typeof body.status === 'string' && body.status.trim()) {
+      attributes.Status = mapStatusToBolten(body.status.trim());
+    }
+    if (typeof body.priority === 'string' && body.priority.trim()) {
+      attributes.Prioridade = body.priority.trim();
+    }
+    if (typeof body.notes === 'string') attributes.Observação = body.notes.trim();
     if (Object.keys(attributes).length === 0) {
-      return res.status(400).json({ error: 'Nada para atualizar' });
+      return jsonResponse(res, 400, { error: 'Nada para atualizar' });
     }
 
     try {
-      const boltenRes = await fetch(
-        `${BOLTEN_BASE}/kanban/api/v1/${kanbanComponentId}/opportunities/${opportunityId}`,
+      const response = await fetchWithTimeout(
+        `${BOLTEN_BASE}/kanban/api/v1/${kanbanComponentId}/opportunities/${encodeURIComponent(opportunityId)}`,
         {
           method: 'PATCH',
-          headers,
+          headers: boltenHeaders(apiKey),
           body: JSON.stringify({ attributes }),
         },
       );
-
-      if (!boltenRes.ok) {
-        const detail = await boltenRes.text();
-        console.error('Bolten: falha ao atualizar oportunidade', boltenRes.status, detail);
-        return res.status(502).json({ error: 'Falha ao atualizar oportunidade no Bolten' });
+      if (!response.ok) {
+        console.error('Bolten: falha ao atualizar oportunidade', response.status, await response.text());
+        return jsonResponse(res, 502, { error: 'Falha ao atualizar oportunidade no Bolten' });
       }
-
-      const opportunity = await boltenRes.json();
-      return res.status(200).json({ ok: true, opportunityId: opportunity.id });
-    } catch (err) {
-      console.error('Bolten: erro inesperado', err);
-      return res.status(500).json({ error: 'Erro interno ao sincronizar com o Bolten' });
+      const opportunity = await response.json();
+      return jsonResponse(res, 200, { ok: true, opportunityId: opportunity.id || opportunityId });
+    } catch (error) {
+      console.error('Bolten: erro inesperado na atualização', error);
+      return jsonResponse(res, 502, { error: 'Não foi possível atualizar o Bolten agora' });
     }
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método não permitido' });
+  if (req.method !== 'POST') return jsonResponse(res, 405, { error: 'Método não permitido' });
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('Bolten: SUPABASE_SERVICE_ROLE_KEY ausente para registrar o espelho local');
+    return jsonResponse(res, 500, { error: 'Espelho Supabase não configurado no servidor' });
   }
 
-  const { name, email, phone, company, service, has_site, instagram, message } = req.body ?? {};
-
-  if (!name || !email) {
-    return res.status(400).json({ error: 'name e email são obrigatórios' });
+  const validation = validateLeadPayload(body);
+  if (!validation.ok) {
+    return jsonResponse(res, 400, { error: 'Dados do lead inválidos', fields: validation.errors });
   }
 
-  const observacao = [
-    company && `Empresa: ${company}`,
-    service && `Serviço: ${service}`,
-    has_site && `Já possui site: ${has_site}`,
-    instagram && `Instagram: ${instagram}`,
-    message && `Mensagem: ${message}`,
-  ]
-    .filter(Boolean)
-    .join('\n');
+  const data = validation.data;
+  const localContactId = typeof body.localContactId === 'string' ? body.localContactId.trim() : '';
+  const headers = boltenHeaders(apiKey);
 
   try {
-    const contactRes = await fetch(`${BOLTEN_BASE}/contact/api/v1/${contactComponentId}/contacts`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        attributes: {
-          Nome: name,
-          'E-mail': email,
-          Telefone: phone || '',
-        },
-      }),
+    const contactId = await createBoltenContact(data, headers, contactComponentId);
+    const opportunityId = await createBoltenOpportunity(data, headers, kanbanComponentId);
+    await linkBoltenContact(opportunityId, contactId, headers, kanbanComponentId);
+
+    const localRecorded = await updateLocalSyncState(localContactId, {
+      bolten_contact_id: contactId,
+      bolten_opportunity_id: opportunityId,
+      bolten_status: 'Pendente',
+      bolten_sync_status: 'synced',
+      bolten_sync_error: null,
+      bolten_last_synced_at: new Date().toISOString(),
     });
 
-    if (!contactRes.ok) {
-      const detail = await contactRes.text();
-      console.error('Bolten: falha ao criar contato', contactRes.status, detail);
-      return res.status(502).json({ error: 'Falha ao criar contato no Bolten' });
-    }
-    const contact = await contactRes.json();
-
-    const oppRes = await fetch(`${BOLTEN_BASE}/kanban/api/v1/${kanbanComponentId}/opportunities`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        attributes: {
-          Prioridade: 'Média',
-          Observação: observacao,
-        },
-      }),
-    });
-
-    if (!oppRes.ok) {
-      const detail = await oppRes.text();
-      console.error('Bolten: falha ao criar oportunidade', oppRes.status, detail);
-      return res.status(502).json({ error: 'Falha ao criar oportunidade no Bolten' });
-    }
-    const opportunity = await oppRes.json();
-
-    const linkRes = await fetch(
-      `${BOLTEN_BASE}/kanban/api/v1/${kanbanComponentId}/opportunities/${opportunity.id}/contact`,
-      {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ id: contact.id }),
-      },
-    );
-
-    if (!linkRes.ok) {
-      const detail = await linkRes.text();
-      console.error('Bolten: falha ao vincular contato à oportunidade', linkRes.status, detail);
-    }
-
-    return res.status(201).json({
+    return jsonResponse(res, 201, {
       ok: true,
-      contactId: contact.id,
-      opportunityId: opportunity.id,
-      contactLinked: linkRes.ok,
+      contactId,
+      opportunityId,
+      contactLinked: true,
+      localRecorded,
     });
-  } catch (err) {
-    console.error('Bolten: erro inesperado', err);
-    return res.status(500).json({ error: 'Erro interno ao sincronizar com o Bolten' });
+  } catch (error) {
+    console.error('Bolten: erro ao sincronizar lead', error);
+    await updateLocalSyncState(localContactId, {
+      bolten_sync_status: 'error',
+      bolten_sync_error: error instanceof Error ? error.message.slice(0, 500) : 'Falha desconhecida',
+    }).catch((syncError) => console.error('Bolten: falha ao registrar erro local', syncError));
+    return jsonResponse(res, 502, { error: 'Não foi possível sincronizar o lead com o Bolten' });
   }
 }

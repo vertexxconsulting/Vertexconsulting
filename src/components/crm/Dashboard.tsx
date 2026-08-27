@@ -23,6 +23,7 @@ export default function Dashboard() {
     conversionRate: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     loadData();
@@ -30,18 +31,24 @@ export default function Dashboard() {
 
   const loadData = async () => {
     setLoading(true);
-    const data = await fetchContacts();
-    setContacts(data);
+    setError('');
+    try {
+      const data = await fetchContacts();
+      setContacts(data);
 
-    const today = new Date().toISOString().split('T')[0];
-    const totalLeads = data.length;
-    const newToday = data.filter((c) => c.created_at?.split('T')[0] === today).length;
-    const whatsappSent = data.filter((c) => c.whatsapp_sent).length;
-    const closed = data.filter((c) => c.status === 'Fechado Ganho').length;
-    const conversionRate = totalLeads > 0 ? Math.round((closed / totalLeads) * 100) : 0;
+      const today = new Date().toISOString().split('T')[0];
+      const totalLeads = data.length;
+      const newToday = data.filter((c) => c.created_at?.split('T')[0] === today).length;
+      const whatsappSent = data.filter((c) => c.whatsapp_sent).length;
+      const closed = data.filter((c) => c.status === 'Fechado Ganho').length;
+      const conversionRate = totalLeads > 0 ? Math.round((closed / totalLeads) * 100) : 0;
 
-    setMetrics({ totalLeads, newToday, whatsappSent, conversionRate });
-    setLoading(false);
+      setMetrics({ totalLeads, newToday, whatsappSent, conversionRate });
+    } catch {
+      setError('Não foi possível carregar os leads. Verifique sua sessão e tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatDate = (iso: string) => {
@@ -56,11 +63,17 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div className="empty-state"><p>Carregando...</p></div>;
+    return <div className="empty-state" aria-live="polite"><p>Carregando leads…</p></div>;
   }
 
   return (
     <div>
+      {error && (
+        <div className="crm-inline-error" role="alert">
+          <span>{error}</span>
+          <button className="btn btn--secondary" onClick={loadData}>Tentar novamente</button>
+        </div>
+      )}
       <div className="dash-metrics">
         <div className="metric-card">
           <div className="metric-card__label">Total de Leads</div>
@@ -92,6 +105,7 @@ export default function Dashboard() {
             <p>Nenhum lead registrado ainda.</p>
           </div>
         ) : (
+          <div className="table-scroll">
           <table className="data-table">
             <thead>
               <tr>
@@ -122,6 +136,7 @@ export default function Dashboard() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

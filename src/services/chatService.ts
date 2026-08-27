@@ -12,7 +12,7 @@ export async function fetchConversations(): Promise<Conversation[]> {
 
   if (error) {
     console.error('Erro ao buscar conversas:', error);
-    return [];
+    throw error;
   }
   return (data as Conversation[]) || [];
 }
@@ -26,9 +26,11 @@ export function subscribeToConversations(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'conversations' },
       async () => {
-        // Re-fetch completo para manter a ordem
-        const updated = await fetchConversations();
-        callback(updated);
+        try {
+          callback(await fetchConversations());
+        } catch (error) {
+          console.error('Erro ao atualizar conversas em tempo real:', error);
+        }
       },
     )
     .subscribe();
@@ -39,10 +41,11 @@ export function subscribeToConversations(
 }
 
 export async function markAsRead(conversationId: string): Promise<void> {
-  await supabase
+  const { error } = await supabase
     .from('conversations')
     .update({ unread_count: 0 })
     .eq('id', conversationId);
+  if (error) console.error('Erro ao marcar conversa como lida:', error);
 }
 
 // ── Mensagens ─────────────────────────────────────────────────
@@ -56,7 +59,7 @@ export async function fetchMessages(conversationId: string): Promise<Message[]> 
 
   if (error) {
     console.error('Erro ao buscar mensagens:', error);
-    return [];
+    throw error;
   }
   return (data as Message[]) || [];
 }
@@ -94,27 +97,15 @@ export async function sendMessage(
   text: string,
 ): Promise<Message | null> {
   const config = getEvolutionConfig();
+  const timestamp = new Date().toISOString();
 
-  // Insere localmente primeiro (optimistic UI)
-  const optimisticId = crypto.randomUUID();
-  const optimistic: Message = {
-    id: optimisticId,
-    conversation_id: conversationId,
-    sender: 'agent',
-    text,
-    timestamp: new Date().toISOString(),
-    status: 'sent',
-    evolution_id: null,
-  };
-
-  // Persiste no Supabase
   const { data: inserted, error } = await supabase
     .from('messages')
     .insert({
       conversation_id: conversationId,
       sender: 'agent',
       text,
-      timestamp: optimistic.timestamp,
+      timestamp,
       status: 'sent',
     })
     .select()
@@ -125,23 +116,37 @@ export async function sendMessage(
     return null;
   }
 
-  // Atualiza last_message na conversa
   await supabase
     .from('conversations')
     .update({
       last_message: text.substring(0, 120),
-      last_message_at: optimistic.timestamp,
+      last_message_at: timestamp,
     })
     .eq('id', conversationId);
 
-  // Envia via Evolution (não bloqueia o retorno visual)
+  let delivered = false;
   if (config.apiUrl && config.apiKey && config.instanceName) {
-    sendTextMessage(config.instanceName, phone, text).catch((err) =>
-      console.error('Erro ao enviar via Evolution:', err),
-    );
+    try {
+      await sendTextMessage(config.instanceName, phone, text);
+      delivered = true;
+    } catch (sendError) {
+      console.error('Erro ao enviar via Evolution:', sendError);
+    }
+  } else {
+    console.error('Evolution API não configurada para envio de mensagem.');
   }
 
-  return (inserted as Message) || optimistic;
+  if (!delivered) {
+    await supabase
+      .from('messages')
+      .update({ status: 'failed' })
+      .eq('id', inserted.id);
+  }
+
+  return {
+    ...(inserted as Message),
+    status: delivered ? 'sent' : 'failed',
+  };
 }
 
 // ── Utilitário: formata timestamp relativo ─────────────────────

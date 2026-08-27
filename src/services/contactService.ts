@@ -1,31 +1,69 @@
 import { supabase } from './supabaseClient';
 import { sendLeadNotification } from './evolutionApi';
-import { syncLeadToBolten, updateBoltenOpportunity } from './boltenService';
+import { syncLeadToBolten, updateBoltenOpportunity, type BoltenLeadData } from './boltenService';
 import type { ContactData, ContactStatus, Priority, DashboardMetrics } from '../types';
 
-export async function createContact(data: {
-  name: string;
-  email: string;
-  phone: string;
-  company: string;
-  service: string;
-  message: string;
-  has_site: string;
-  instagram: string;
-}): Promise<{ contact: ContactData | null; whatsappSent: boolean }> {
-  // Gera o ID no cliente: evita o SELECT pós-insert (que o RLS bloqueia p/ anon)
+export type PublicContactData = BoltenLeadData;
+
+type ContactChanges = {
+  status?: ContactStatus;
+  priority?: Priority;
+  notes?: string;
+};
+
+function contactToBoltenLead(contact: ContactData): BoltenLeadData {
+  return {
+    name: contact.name,
+    email: contact.email,
+    phone: contact.phone,
+    company: contact.company,
+    service: contact.service,
+    has_site: contact.has_site,
+    instagram: contact.instagram,
+    message: contact.message,
+  };
+}
+
+async function markBoltenSyncError(id: string, message: string) {
+  await supabase
+    .from('contacts')
+    .update({
+      bolten_sync_status: 'error',
+      bolten_sync_error: message.slice(0, 500),
+    })
+    .eq('id', id);
+}
+
+export async function createContact(data: PublicContactData): Promise<{
+  contact: ContactData;
+  whatsappSent: boolean;
+  boltenSynced: boolean;
+}> {
   const id = crypto.randomUUID();
+  const createdAt = new Date().toISOString();
+  const localContact: ContactData = {
+    id,
+    ...data,
+    status: 'Novo',
+    priority: 'Média',
+    notes: '',
+    whatsapp_sent: false,
+    created_at: createdAt,
+    bolten_sync_status: 'pending',
+    bolten_sync_error: null,
+    bolten_last_synced_at: null,
+  };
 
   const { error } = await supabase
     .from('contacts')
     .insert([{
-      id,
       ...data,
-      status: 'Novo',
-      priority: 'Média',
-      notes: '',
-      whatsapp_sent: false,
-      created_at: new Date().toISOString(),
+      id,
+      status: localContact.status,
+      priority: localContact.priority,
+      notes: localContact.notes,
+      whatsapp_sent: localContact.whatsapp_sent,
+      created_at: createdAt,
     }]);
 
   if (error) {
@@ -33,37 +71,34 @@ export async function createContact(data: {
     throw error;
   }
 
-  // Cria contato + oportunidade no Bolten e grava os IDs no registro
-  const bolten = await syncLeadToBolten(data);
+  // A sincronização ocorre no endpoint server-side para nunca expor a chave Bolten.
+  const bolten = await syncLeadToBolten(data, id);
   if (bolten) {
-    await supabase
-      .from('contacts')
-      .update({
-        bolten_contact_id: bolten.contactId,
-        bolten_opportunity_id: bolten.opportunityId,
-      })
-      .eq('id', id);
+    localContact.bolten_contact_id = bolten.contactId;
+    localContact.bolten_opportunity_id = bolten.opportunityId;
+    localContact.bolten_sync_status = 'synced';
+    localContact.bolten_last_synced_at = new Date().toISOString();
   }
-
-  const contact: ContactData | null = {
-    id,
-    ...data,
-    status: 'Novo',
-    priority: 'Média',
-    notes: '',
-    whatsapp_sent: false,
-    created_at: new Date().toISOString(),
-  };
 
   let whatsappSent = false;
   if (data.phone) {
     whatsappSent = await sendLeadNotification(data.name, data.phone);
-    if (whatsappSent && contact) {
-      await supabase.rpc('mark_whatsapp_sent', { p_contact_id: contact.id });
+    if (whatsappSent) {
+      await supabase.rpc('mark_whatsapp_sent', { p_contact_id: id });
+      localContact.whatsapp_sent = true;
     }
   }
 
-  return { contact, whatsappSent };
+  return { contact: localContact, whatsappSent, boltenSynced: Boolean(bolten?.localRecorded) };
+}
+
+export async function retryContactBoltenSync(contact: ContactData): Promise<boolean> {
+  const result = await syncLeadToBolten(contactToBoltenLead(contact), contact.id);
+  if (!result) {
+    await markBoltenSyncError(contact.id, 'Não foi possível sincronizar com o Bolten.');
+    return false;
+  }
+  return Boolean(result?.localRecorded);
 }
 
 export async function fetchContacts(): Promise<ContactData[]> {
@@ -74,78 +109,59 @@ export async function fetchContacts(): Promise<ContactData[]> {
 
   if (error) {
     console.error('Erro ao buscar contatos:', error);
-    return [];
+    throw error;
   }
   return data || [];
 }
 
-export async function updateContactStatus(
+export async function updateContact(
   id: string,
-  status: ContactStatus,
-): Promise<void> {
-  const { error } = await supabase
-    .from('contacts')
-    .update({ status })
-    .eq('id', id);
-
-  if (error) throw error;
-
-  // Espelha a alteração no funil do Bolten
-  const { data } = await supabase
+  changes: ContactChanges,
+): Promise<{ boltenSynced: boolean }> {
+  const { data: current, error: readError } = await supabase
     .from('contacts')
     .select('bolten_opportunity_id')
     .eq('id', id)
     .maybeSingle();
 
-  if (data?.bolten_opportunity_id) {
-    void updateBoltenOpportunity(data.bolten_opportunity_id, { status });
+  if (readError) throw readError;
+
+  const { error } = await supabase
+    .from('contacts')
+    .update(changes)
+    .eq('id', id);
+
+  if (error) throw error;
+
+  if (!current?.bolten_opportunity_id) return { boltenSynced: false };
+
+  const boltenSynced = await updateBoltenOpportunity(current.bolten_opportunity_id, changes);
+  if (boltenSynced) {
+    await supabase
+      .from('contacts')
+      .update({
+        bolten_sync_status: 'synced',
+        bolten_sync_error: null,
+        bolten_last_synced_at: new Date().toISOString(),
+      })
+      .eq('id', id);
+  } else {
+    await markBoltenSyncError(id, 'A alteração local foi salva, mas não chegou ao Bolten.');
   }
+
+  return { boltenSynced };
 }
 
-export async function updateContactPriority(
-  id: string,
-  priority: Priority,
-): Promise<void> {
-  const { error } = await supabase
-    .from('contacts')
-    .update({ priority })
-    .eq('id', id);
-
-  if (error) throw error;
-
-  // Espelha a alteração no funil do Bolten
-  const { data } = await supabase
-    .from('contacts')
-    .select('bolten_opportunity_id')
-    .eq('id', id)
-    .maybeSingle();
-
-  if (data?.bolten_opportunity_id) {
-    void updateBoltenOpportunity(data.bolten_opportunity_id, { priority });
-  }
+export async function updateContactStatus(id: string, status: ContactStatus) {
+  return updateContact(id, { status });
 }
 
-export async function updateContactNotes(
-  id: string,
-  notes: string,
-): Promise<void> {
-  const { error } = await supabase
-    .from('contacts')
-    .update({ notes })
-    .eq('id', id);
+export async function updateContactPriority(id: string, priority: Priority) {
+  return updateContact(id, { priority });
+}
 
-  if (error) throw error;
-
-  // Espelha a alteração na Observação do Bolten
-  const { data } = await supabase
-    .from('contacts')
-    .select('bolten_opportunity_id')
-    .eq('id', id)
-    .maybeSingle();
-
-  if (data?.bolten_opportunity_id) {
-    void updateBoltenOpportunity(data.bolten_opportunity_id, { notes });
-  }
+export async function updateContactNotes(id: string, notes: string) {
+  return updateContact(id, { notes });
 }
 
 export async function deleteContact(id: string): Promise<void> {
@@ -162,9 +178,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const today = new Date().toISOString().split('T')[0];
 
   const totalLeads = contacts.length;
-  const newToday = contacts.filter(
-    (c) => c.created_at?.split('T')[0] === today,
-  ).length;
+  const newToday = contacts.filter((c) => c.created_at?.split('T')[0] === today).length;
   const whatsappSent = contacts.filter((c) => c.whatsapp_sent).length;
   const closed = contacts.filter((c) => c.status === 'Fechado Ganho').length;
   const conversionRate = totalLeads > 0 ? (closed / totalLeads) * 100 : 0;

@@ -1,16 +1,12 @@
 -- ============================================================
--- VERTEX CRM — Espelho Bolten
--- Adiciona IDs e estado de sincronização para sincronização 2 vias
--- Aplicar no SQL Editor do projeto Supabase.
+-- VERTEX CRM — Confiabilidade do espelho Bolten
+-- Aplicar no mesmo projeto Supabase antes do próximo deploy.
 -- ============================================================
 
 ALTER TABLE public.contacts
-  ADD COLUMN IF NOT EXISTS bolten_contact_id      uuid,
-  ADD COLUMN IF NOT EXISTS bolten_opportunity_id  uuid,
-  ADD COLUMN IF NOT EXISTS bolten_status          text,
-  ADD COLUMN IF NOT EXISTS bolten_sync_status     text DEFAULT 'pending' NOT NULL,
-  ADD COLUMN IF NOT EXISTS bolten_sync_error      text,
-  ADD COLUMN IF NOT EXISTS bolten_last_synced_at  timestamptz;
+  ADD COLUMN IF NOT EXISTS bolten_sync_status text DEFAULT 'pending' NOT NULL,
+  ADD COLUMN IF NOT EXISTS bolten_sync_error text,
+  ADD COLUMN IF NOT EXISTS bolten_last_synced_at timestamptz;
 
 UPDATE public.contacts
 SET
@@ -19,14 +15,6 @@ SET
   bolten_sync_error = NULL
 WHERE bolten_opportunity_id IS NOT NULL
   AND bolten_sync_status = 'pending';
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_bolten_contact_id
-  ON public.contacts(bolten_contact_id)
-  WHERE bolten_contact_id IS NOT NULL;
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_bolten_opportunity_id
-  ON public.contacts(bolten_opportunity_id)
-  WHERE bolten_opportunity_id IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_contacts_bolten_sync_status
   ON public.contacts (bolten_sync_status);

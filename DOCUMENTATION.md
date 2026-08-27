@@ -10,7 +10,7 @@ O sistema é um monorepo que engloba duas partes principais unificadas na mesma 
 
 ## 2. Tecnologias e Stack (Frontend)
 
-- **Framework:** React 18
+- **Framework:** React 19
 - **Build Tool:** Vite
 - **Linguagem:** TypeScript (`strict: true`)
 - **Roteamento:** `react-router-dom` (Páginas independentes para `/` e `/crm`)
@@ -40,9 +40,24 @@ O armazenamento dos leads (contatos) é feito exclusivamente no [Supabase](https
 - `notes` (text, para uso interno do CRM)
 - `whatsapp_sent` (boolean, default: false)
 - `created_at` (timestamptz)
+- `bolten_contact_id` / `bolten_opportunity_id` (uuid, identificadores do espelho externo)
+- `bolten_status` (text, último estágio recebido do Bolten)
+- `bolten_sync_status` (text: `pending`, `synced` ou `error`)
+- `bolten_sync_error` (text, diagnóstico da última falha)
+- `bolten_last_synced_at` (timestamptz)
 
 ### Regras de Negócio do Supabase
-Toda vez que o usuário preenche o formulário na Landing Page, o serviço `createContact` (em `src/services/contactService.ts`) insere a linha com o status inicial `"Novo"`.
+Toda vez que o usuário preenche o formulário na Landing Page, o serviço `createContact` (em `src/services/contactService.ts`) insere a linha com o status inicial `"Novo"` e `bolten_sync_status = "pending"`. O endpoint server-side pode então atualizar os identificadores externos sem depender de `UPDATE` anônimo.
+
+### Integração 2: CRM externo Bolten
+
+O espelho do CRM externo usa a API Beta do Bolten no endpoint privado `api/bolten.js` e o webhook `api/bolten-webhook.js`.
+
+- **Variáveis privadas do servidor/Vercel:** `BOLTEN_API_KEY`, `BOLTEN_CONTACT_COMPONENT_ID`, `BOLTEN_KANBAN_COMPONENT_ID`, `BOLTEN_WEBHOOK_SECRET` e `SUPABASE_SERVICE_ROLE_KEY`.
+- **Variáveis públicas do navegador:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e as variáveis `VITE_EVOLUTION_*` usadas pelo painel atual de WhatsApp. A chave Bolten nunca deve começar com `VITE_`; ela é consumida somente no servidor.
+- **Saída:** o lead é criado como contato e oportunidade, vinculado no funil e registrado localmente como `synced`; se algo falhar, o registro local fica com `error` e pode ser reenviado pelo detalhe do contato.
+- **Entrada:** configure no Bolten o webhook para `POST /api/bolten-webhook` com autenticação `X-API-KEY`. Eventos `opportunity.created`, `opportunity.transitioned`, `opportunity.won` e `opportunity.lost` atualizam ou criam o lead localmente.
+- **Idempotência:** cada `event_id` recebido é gravado em `bolten_webhook_events`, evitando duplicidade quando o Bolten repetir a entrega.
 
 ---
 
@@ -51,11 +66,11 @@ Toda vez que o usuário preenche o formulário na Landing Page, o serviço `crea
 O disparo de mensagens via WhatsApp não utiliza APIs fechadas comerciais. Ele utiliza o servidor open-source da **Evolution API**, conectado via Baileys (QR Code).
 
 - **Arquivo de configuração:** `src/services/evolutionApi.ts`
-- **Como a configuração é armazenada:** Atualmente via `localStorage` na máquina de quem usa o CRM (aba *Configurações*). Assim, o dono da agência cadastra:
+- **Como a configuração é armazenada:** Atualmente via `localStorage` na máquina de quem usa o CRM (aba *Configurações*). A chave Bolten não é armazenada no navegador; o dono da agência cadastra na Vercel as variáveis privadas descritas acima. Para a Evolution, o dono cadastra:
   - `apiUrl` (Ex: `https://api.seudominio.com`)
   - `apiKey` (Chave configurada no servidor Evolution)
   - `instanceName` (Ex: `vertex-consulting`)
-  - `messageTemplate` (A mensagem enviada aos leads, permitindo a tag dinâmica `{nome}`)
+  - `messageTemplate` (A mensagem enviada aos leads; o padrão atual é: `Olá! Vim pelo site da Vertex e gostaria de entender como a consultoria pode ajudar o meu negócio.`)
 
 ### Fluxo de Disparo Automático (Landing Page)
 1. Visitante preenche o form (com número X).
@@ -105,6 +120,11 @@ npm install
 npm run dev
 ```
 
+**Testes de regressão:**
+```bash
+npm test
+```
+
 **Como buildar para produção (Vercel/Netlify/Hostinger):**
 ```bash
 npm run build
@@ -122,4 +142,4 @@ Se você (um LLM) for realizar manutenções neste sistema no futuro, siga estas
 - **Design:** Não introduza frameworks de CSS (Tailwind, Bootstrap). Use as variáveis já existentes em `index.css`. Mantenha a estética escura e limpa. Não use Emojis.
 - **Tipagem:** O `types.ts` usa objetos literais combinados com tipos (`as const`) para simular `enums` e contornar erros de sintaxe apagável do Vite. Ao adicionar novos Status de Contato, atualize em ambos.
 - **Requisições:** A *Evolution API* é severa quanto à formatação do número de telefone. A função `sendTextMessage` já faz um parse removendo não numéricos e garantindo que comece com `55` (Brasil).
-- **Tratamento de Chaves:** Nunca faça hardcode de chaves e URLS sensíveis diretamente no componente. Utilize o sistema de `.env` para Supabase, e `localStorage` (como feito no módulo Settings) para a URL dinâmica da API de WhatsApp.
+- **Tratamento de Chaves:** Nunca faça hardcode de chaves e URLs sensíveis diretamente no componente. Utilize `.env` para Supabase e as variáveis privadas da Vercel para o Bolten. A chave Bolten é consumida somente por `api/bolten.js` e `api/bolten-webhook.js`.

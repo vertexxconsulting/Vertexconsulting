@@ -53,6 +53,7 @@ export default function ConversationList({
           className="conv-list__search"
           type="text"
           placeholder="Buscar conversa..."
+          aria-label="Buscar conversa"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -88,6 +89,7 @@ export default function ConversationList({
               id={`conv-item-${conv.id}`}
               className={`conv-item ${isSelected ? 'conv-item--active' : ''}`}
               onClick={() => onSelect(conv)}
+              aria-current={isSelected ? 'true' : undefined}
             >
               {/* Avatar */}
               <div className="conv-item__avatar">

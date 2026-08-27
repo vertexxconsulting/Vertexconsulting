@@ -34,8 +34,10 @@ export default function ChatWindow({ conversation }: Props) {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sendError, setSendError] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const conversationId = conversation?.id;
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
     bottomRef.current?.scrollIntoView({ behavior });
@@ -43,20 +45,33 @@ export default function ChatWindow({ conversation }: Props) {
 
   // Carrega mensagens quando muda de conversa
   useEffect(() => {
-    if (!conversation) {
+    let cancelled = false;
+    if (!conversationId) {
       setMessages([]);
+      setLoading(false);
       return;
     }
 
+    setMessages([]);
     setLoading(true);
-    fetchMessages(conversation.id).then((msgs) => {
-      setMessages(msgs);
-      setLoading(false);
-      setTimeout(() => scrollToBottom('instant'), 50);
-    });
+    setSendError('');
+    fetchMessages(conversationId)
+      .then((msgs) => {
+        if (cancelled) return;
+        setMessages(msgs);
+        setLoading(false);
+        setTimeout(() => scrollToBottom('instant'), 50);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setMessages([]);
+        setLoading(false);
+        setSendError('Não foi possível carregar as mensagens. Tente novamente.');
+      });
 
     // Realtime
-    const unsubscribe = subscribeToMessages(conversation.id, (newMsg) => {
+    const unsubscribe = subscribeToMessages(conversationId, (newMsg) => {
+      if (cancelled) return;
       setMessages((prev) => {
         // Evita duplicatas
         if (prev.some((m) => m.id === newMsg.id)) return prev;
@@ -65,8 +80,11 @@ export default function ChatWindow({ conversation }: Props) {
       setTimeout(() => scrollToBottom('smooth'), 50);
     });
 
-    return unsubscribe;
-  }, [conversation?.id, scrollToBottom]);
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [conversationId, scrollToBottom]);
 
   // Auto-scroll quando mensagens mudam
   useEffect(() => {
@@ -78,6 +96,7 @@ export default function ChatWindow({ conversation }: Props) {
     const content = text.trim();
     setText('');
     setSending(true);
+    setSendError('');
 
     // Optimistic insert
     const optimistic: Message = {
@@ -92,7 +111,17 @@ export default function ChatWindow({ conversation }: Props) {
     setMessages((prev) => [...prev, optimistic]);
     scrollToBottom('smooth');
 
-    await sendMessage(conversation.id, conversation.phone, content);
+    const persisted = await sendMessage(conversation.id, conversation.phone, content);
+    setMessages((prev) => {
+      const withoutOptimistic = prev.filter((message) => message.id !== optimistic.id);
+      if (!persisted || withoutOptimistic.some((message) => message.id === persisted.id)) {
+        return withoutOptimistic;
+      }
+      return [...withoutOptimistic, persisted];
+    });
+    if (!persisted || persisted.status === 'failed') {
+      setSendError('Mensagem salva localmente, mas não foi entregue. Verifique a conexão do WhatsApp e tente novamente.');
+    }
     setSending(false);
     inputRef.current?.focus();
   };
@@ -152,6 +181,9 @@ export default function ChatWindow({ conversation }: Props) {
 
       {/* Área de mensagens */}
       <div className="chat-window__messages" id="chat-messages-scroll">
+        {sendError && (
+          <p className="chat-window__send-error" role="alert">{sendError}</p>
+        )}
         {loading && (
           <div className="chat-window__loading">
             <div className="conv-list__spinner" />
@@ -182,7 +214,9 @@ export default function ChatWindow({ conversation }: Props) {
                       <span className="chat-bubble__time">{formatTime(msg.timestamp)}</span>
                       {isAgent && (
                         <span className="chat-bubble__status" title={msg.status}>
-                          {msg.status === 'read' ? (
+                          {msg.status === 'failed' ? (
+                            <span className="chat-bubble__failed">Falha</span>
+                          ) : msg.status === 'read' ? (
                             // Dois ticks azuis
                             <svg viewBox="0 0 16 10" fill="none" width="14">
                               <path d="M1 5l3 3 5-7" stroke="#60a5fa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -219,6 +253,7 @@ export default function ChatWindow({ conversation }: Props) {
           id="chat-message-input"
           className="chat-window__input"
           placeholder="Digite uma mensagem... (Enter para enviar)"
+          aria-label="Mensagem da conversa"
           rows={1}
           value={text}
           onChange={(e) => setText(e.target.value)}

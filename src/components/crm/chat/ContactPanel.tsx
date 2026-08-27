@@ -17,50 +17,75 @@ export default function ContactPanel({ conversation }: Props) {
   const [loadingContact, setLoadingContact] = useState(false);
   const [status, setStatus] = useState<string>('Ativo');
   const [savingStatus, setSavingStatus] = useState(false);
+  const [statusError, setStatusError] = useState('');
+  const conversationId = conversation?.id;
+  const conversationContactId = conversation?.contact_id;
+  const conversationPhone = conversation?.phone;
+  const conversationStatus = conversation?.status;
 
   // Busca contato vinculado quando muda a conversa
   useEffect(() => {
-    if (!conversation) {
+    let cancelled = false;
+    if (!conversationId || !conversationPhone || !conversationStatus) {
       setContact(null);
+      setLoadingContact(false);
       return;
     }
 
-    setStatus(conversation.status);
+    setStatus(conversationStatus);
+    setStatusError('');
+    setLoadingContact(true);
 
-    if (conversation.contact_id) {
-      setLoadingContact(true);
-      supabase
-        .from('contacts')
-        .select('*')
-        .eq('id', conversation.contact_id)
-        .maybeSingle()
-        .then(({ data }) => {
-          setContact(data as ContactData | null);
-          setLoadingContact(false);
-        });
-    } else {
-      // Tenta buscar pelo phone
-      const phone = conversation.phone.replace(/^55/, '');
-      supabase
-        .from('contacts')
-        .select('*')
-        .or(`phone.eq.${phone},phone.eq.${conversation.phone}`)
-        .maybeSingle()
-        .then(({ data }) => {
-          setContact(data as ContactData | null);
-          setLoadingContact(false);
-        });
+    const phoneSuffix = conversationPhone.replace(/\D/g, '').slice(-8);
+    if (!conversationContactId && !phoneSuffix) {
+      setContact(null);
+      setLoadingContact(false);
+      return () => {
+        cancelled = true;
+      };
     }
-  }, [conversation?.id]);
+    const contactQuery = conversationContactId ?
+      supabase
+        .from('contacts')
+        .select('*')
+        .eq('id', conversationContactId)
+        .maybeSingle()
+      : supabase
+        .from('contacts')
+        .select('*')
+        .ilike('phone', `%${phoneSuffix}`)
+        .maybeSingle();
+
+    Promise.resolve(contactQuery)
+      .then(({ data }) => {
+        if (cancelled) return;
+        setContact(data as ContactData | null);
+        setLoadingContact(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setContact(null);
+        setLoadingContact(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [conversationContactId, conversationId, conversationPhone, conversationStatus]);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!conversation) return;
     setStatus(newStatus);
     setSavingStatus(true);
-    await supabase
+    setStatusError('');
+    const { error } = await supabase
       .from('conversations')
       .update({ status: newStatus })
       .eq('id', conversation.id);
+    if (error) {
+      setStatus(conversation.status);
+      setStatusError('Não foi possível atualizar o status.');
+    }
     setSavingStatus(false);
   };
 
@@ -72,7 +97,8 @@ export default function ContactPanel({ conversation }: Props) {
     );
   }
 
-  const waLink = `https://wa.me/${conversation.phone}`;
+  const waDigits = conversation.phone.replace(/\D/g, '');
+  const waLink = `https://wa.me/${waDigits}`;
 
   return (
     <div className="contact-panel">
@@ -118,6 +144,7 @@ export default function ContactPanel({ conversation }: Props) {
         {savingStatus && (
           <span className="contact-panel__saving">Salvando…</span>
         )}
+        {statusError && <span className="contact-panel__error" role="alert">{statusError}</span>}
       </div>
 
       {/* Dados do contato (se vinculado) */}

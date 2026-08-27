@@ -6,17 +6,17 @@ import {
   disconnectInstance,
   deleteInstance,
   getConnectionState,
+  getMessageTemplate,
+  DEFAULT_MESSAGE_TEMPLATE,
 } from '../../services/evolutionApi';
 import type { ConnectionState } from '../../types';
-
-const DEFAULT_TEMPLATE = 'Olá {nome}! Recebemos sua solicitação na Vertex Consulting. Nossa equipe entrará em contato em breve. Obrigado!';
 
 export default function WhatsAppPanel() {
   const config = getEvolutionConfig();
 
-  // apiUrl e instanceName têm defaults — apenas apiKey é obrigatório em runtime
-  const hasDefaults = !!config.apiUrl && !!config.instanceName;
-  const hasApiKey   = !!config.apiKey;
+  // URL e instância têm defaults — a chave continua obrigatória em runtime.
+  const hasApiKey = !!config.apiKey;
+  const hasDefaults = !!config.apiUrl && !!config.instanceName && hasApiKey;
 
   const [connectionState, setConnectionState] = useState<ConnectionState | null>(null);
   const [instanceExists, setInstanceExists] = useState(false);
@@ -26,7 +26,7 @@ export default function WhatsAppPanel() {
   const [statusMsg, setStatusMsg] = useState('');
   const [error, setError] = useState('');
   const [messageTemplate, setMessageTemplate] = useState(() => {
-    return localStorage.getItem('vertex_msg_template') || DEFAULT_TEMPLATE;
+    return getMessageTemplate() || DEFAULT_MESSAGE_TEMPLATE;
   });
   const [templateSaved, setTemplateSaved] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -70,7 +70,7 @@ export default function WhatsAppPanel() {
       setInstanceExists(false);
       setQrBase64(null);
       setStatusMsg('');
-      setError('');
+      setError('Não foi possível consultar a Evolution API. Verifique a URL, a chave e a instância.');
       return null;
     } finally {
       setInitialChecking(false);

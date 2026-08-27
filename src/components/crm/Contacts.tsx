@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchContacts, updateContactStatus, updateContactNotes, deleteContact } from '../../services/contactService';
+import { fetchContacts, updateContact, retryContactBoltenSync, deleteContact } from '../../services/contactService';
 import { sendLeadNotification } from '../../services/evolutionApi';
 import { supabase } from '../../services/supabaseClient';
 import { ContactStatuses, type ContactStatus, type ContactData } from '../../types';
@@ -53,6 +53,11 @@ export default function Contacts() {
   const [editNotes, setEditNotes] = useState('');
   const [editStatus, setEditStatus] = useState('');
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [retryingSync, setRetryingSync] = useState(false);
+  const [error, setError] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     loadContacts();
@@ -78,43 +83,93 @@ export default function Contacts() {
 
   const loadContacts = async () => {
     setLoading(true);
-    const data = await fetchContacts();
-    setContacts(data);
-    setLoading(false);
+    setError('');
+    try {
+      setContacts(await fetchContacts());
+    } catch {
+      setError('Não foi possível carregar os contatos. Verifique sua sessão e tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const openDetail = (contact: ContactData) => {
     setSelected(contact);
     setEditNotes(contact.notes || '');
     setEditStatus(contact.status || 'Novo');
+    setActionError('');
+    setNotice('');
   };
 
   const saveChanges = async () => {
     if (!selected) return;
+    setSaving(true);
+    setActionError('');
+    setNotice('');
     try {
-      await updateContactStatus(selected.id, editStatus as ContactStatus);
-      await updateContactNotes(selected.id, editNotes);
-      setSelected(null);
+      const result = await updateContact(selected.id, {
+        status: editStatus as ContactStatus,
+        notes: editNotes,
+      });
+      if (!selected.bolten_opportunity_id) {
+        setNotice('Alterações salvas localmente; o lead ainda não foi vinculado ao Bolten.');
+      } else if (!result.boltenSynced) {
+        setActionError('Alteração local salva, mas não foi enviada ao Bolten. Use a nova tentativa abaixo.');
+      } else {
+        setNotice('Alterações salvas e sincronizadas.');
+      }
       await loadContacts();
     } catch (e) {
-      console.error('Erro ao salvar:', e);
+      console.error('Erro ao salvar contato:', e);
+      setActionError('Não foi possível salvar as alterações. Tente novamente.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRetrySync = async () => {
+    if (!selected) return;
+    setRetryingSync(true);
+    setActionError('');
+    try {
+      const synced = await retryContactBoltenSync(selected);
+      if (!synced) {
+        setActionError('Não foi possível sincronizar este lead agora.');
+        return;
+      }
+      setNotice('Lead sincronizado com o Bolten.');
+      await loadContacts();
+      setSelected((current) => current ? { ...current, bolten_sync_status: 'synced', bolten_sync_error: null } : current);
+    } catch {
+      setActionError('Não foi possível sincronizar este lead agora.');
+    } finally {
+      setRetryingSync(false);
     }
   };
 
   const handleResendWhatsApp = async (contact: ContactData) => {
     if (!contact.phone) return;
-    const sent = await sendLeadNotification(contact.name, contact.phone);
-    if (sent) {
-      await supabase.from('contacts').update({ whatsapp_sent: true }).eq('id', contact.id);
+    try {
+      const sent = await sendLeadNotification(contact.name, contact.phone);
+      if (!sent) throw new Error('WhatsApp não enviado');
+      const { error: updateError } = await supabase.from('contacts').update({ whatsapp_sent: true }).eq('id', contact.id);
+      if (updateError) throw updateError;
       await loadContacts();
+    } catch (resendError) {
+      console.error('Erro ao reenviar WhatsApp:', resendError);
+      setError('Não foi possível enviar o WhatsApp. Verifique a conexão e tente novamente.');
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este contato?')) return;
-    await deleteContact(id);
-    setSelected(null);
-    await loadContacts();
+    try {
+      await deleteContact(id);
+      setSelected(null);
+      await loadContacts();
+    } catch {
+      setActionError('Não foi possível excluir este contato. Tente novamente.');
+    }
   };
 
   const formatDate = (iso: string) => {
@@ -153,12 +208,19 @@ export default function Contacts() {
         </button>
       </div>
 
+      {error && (
+        <div className="crm-inline-error" role="alert">
+          <span>{error}</span>
+          <button className="btn btn--secondary" onClick={loadContacts}>Tentar novamente</button>
+        </div>
+      )}
+
       {loading ? (
-        <div className="empty-state"><p>Carregando...</p></div>
+        <div className="empty-state" aria-live="polite"><p>Carregando contatos…</p></div>
       ) : filtered.length === 0 ? (
         <div className="empty-state"><p>Nenhum contato encontrado.</p></div>
       ) : (
-        <div className="dash-recent">
+        <div className="dash-recent table-scroll">
           <table className="data-table">
             <thead>
               <tr>
@@ -171,12 +233,26 @@ export default function Contacts() {
                 <th>Serviço</th>
                 <th>Status</th>
                 <th>WhatsApp</th>
+                <th>Bolten</th>
                 <th>Data</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((c) => (
-                <tr key={c.id} onClick={() => openDetail(c)} style={{ cursor: 'pointer' }}>
+                <tr
+                  key={c.id}
+                  onClick={() => openDetail(c)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      openDetail(c);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Abrir detalhes de ${c.name}`}
+                  style={{ cursor: 'pointer' }}
+                >
                   <td style={{ color: 'var(--text-bright)', fontWeight: 600 }}>{c.name}</td>
                   <td>{c.email || '-'}</td>
                   <td>
@@ -233,6 +309,11 @@ export default function Contacts() {
                       </button>
                     )}
                   </td>
+                  <td>
+                    <span className={`sync-badge sync-badge--${c.bolten_sync_status || 'pending'}`}>
+                      {c.bolten_sync_status === 'synced' ? 'Sincronizado' : c.bolten_sync_status === 'error' ? 'Pendente' : 'Aguardando'}
+                    </span>
+                  </td>
                   <td style={{ fontSize: '0.78rem', color: 'var(--text-dim)' }}>
                     {formatDate(c.created_at)}
                   </td>
@@ -246,10 +327,10 @@ export default function Contacts() {
       {/* Detail Modal */}
       {selected && (
         <div className="modal-backdrop" onClick={() => setSelected(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="contact-detail-title">
             <div className="modal__header">
-              <h3>{selected.name}</h3>
-              <button className="modal__close" onClick={() => setSelected(null)}>✕</button>
+              <h3 id="contact-detail-title">{selected.name}</h3>
+              <button className="modal__close" onClick={() => setSelected(null)} aria-label="Fechar detalhes">×</button>
             </div>
             <div className="modal__body">
               <div className="modal__field">
@@ -320,6 +401,19 @@ export default function Contacts() {
                   placeholder="Adicionar notas sobre este lead..."
                 />
               </div>
+              {(selected.bolten_sync_status === 'error' || !selected.bolten_opportunity_id) && (
+                <div className="sync-panel">
+                  <div>
+                    <strong>{selected.bolten_opportunity_id ? 'Sincronização pendente' : 'Lead ainda não vinculado ao Bolten'}</strong>
+                    <p>{selected.bolten_sync_error || 'A nova tentativa recria o vínculo com o CRM externo.'}</p>
+                  </div>
+                  <button className="btn btn--secondary" onClick={handleRetrySync} disabled={retryingSync}>
+                    {retryingSync ? 'Sincronizando…' : 'Tentar novamente'}
+                  </button>
+                </div>
+              )}
+              {actionError && <p className="crm-inline-error" role="alert">{actionError}</p>}
+              {notice && <p className="crm-inline-success" role="status">{notice}</p>}
             </div>
             <div className="modal__actions">
               <button
@@ -340,8 +434,9 @@ export default function Contacts() {
                 className="btn btn--primary"
                 style={{ padding: '8px 20px', fontSize: '0.82rem' }}
                 onClick={saveChanges}
+                disabled={saving}
               >
-                Salvar
+                {saving ? 'Salvando…' : 'Salvar'}
               </button>
             </div>
           </div>

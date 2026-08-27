@@ -13,14 +13,15 @@ export default function ChatView() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selected, setSelected] = useState<Conversation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showContactPanel, setShowContactPanel] = useState(true);
 
   // Carrega e assina conversas
   useEffect(() => {
-    fetchConversations().then((data) => {
-      setConversations(data);
-      setLoading(false);
-    });
+    fetchConversations()
+      .then((data) => setConversations(data))
+      .catch(() => setError('Não foi possível carregar as conversas. Tente novamente.'))
+      .finally(() => setLoading(false));
 
     const unsubscribe = subscribeToConversations((updated) => {
       setConversations(updated);
@@ -54,6 +55,8 @@ export default function ChatView() {
         onSelect={handleSelect}
         loading={loading}
       />
+
+      {error && <p className="chat-view__error" role="alert">{error}</p>}
 
       {/* Coluna 2: janela de mensagens */}
       <ChatWindow conversation={selected} />

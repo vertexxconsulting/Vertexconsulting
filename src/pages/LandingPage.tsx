@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import {
-  Target, Diamond, Brain, GraduationCap, BarChart3, Globe,
+  Target, Diamond, Brain, GraduationCap, BarChart3, Globe, ArrowUpRight, Check, X,
 } from 'lucide-react';
 import { createContact } from '../services/contactService';
 import './LandingPage.css';
@@ -23,11 +23,47 @@ function WhatsAppIcon() {
   );
 }
 
+function MetricCounter({ value, prefix = '', suffix = '' }: { value: number; prefix?: string; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const counterRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const element = counterRef.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      observer.disconnect();
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setCount(value);
+        return;
+      }
+
+      const startedAt = performance.now();
+      const duration = 900;
+      const animate = (now: number) => {
+        const progress = Math.min((now - startedAt) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setCount(Math.round(value * eased));
+        if (progress < 1) requestAnimationFrame(animate);
+      };
+      requestAnimationFrame(animate);
+    }, { threshold: 0.4 });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [value]);
+
+  return <span ref={counterRef}>{prefix}{count}{suffix}</span>;
+}
+
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [submissionNotice, setSubmissionNotice] = useState<'synced' | 'pending' | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', company: '', service: '',
@@ -37,6 +73,7 @@ export default function LandingPage() {
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 60);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       // Parallax: desloca os backgrounds com velocidade menor que o scroll
       document.querySelectorAll<HTMLElement>('.parallax-bg').forEach((el) => {
         const parent = el.parentElement;
@@ -69,12 +106,27 @@ export default function LandingPage() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!formOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setFormOpen(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [formOpen]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!formRef.current?.reportValidity() || !canSubmit) return;
     setFormStatus('sending');
 
     try {
-      await createContact({
+      const result = await createContact({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -85,6 +137,7 @@ export default function LandingPage() {
         message: formData.message,
       });
       setFormStatus('success');
+      setSubmissionNotice(result.boltenSynced ? 'synced' : 'pending');
       setFormData({
         name: '', email: '', phone: '', company: '', service: '',
         has_site: '', instagram: '', message: '',
@@ -117,7 +170,8 @@ export default function LandingPage() {
     const required: (keyof typeof formData)[] = [
       'name', 'email', 'phone', 'company', 'service', 'has_site', 'instagram', 'message',
     ];
-    return required.every((k) => formData[k].trim() !== '');
+    return required.every((k) => formData[k].trim() !== '')
+      && formData.phone.replace(/\D/g, '').length >= 10;
   };
 
   const canSubmit = isFormComplete() && formStatus !== 'sending';
@@ -125,12 +179,12 @@ export default function LandingPage() {
   const openForm = () => {
     setMobileMenu(false);
     setFormOpen(true);
-    document.body.style.overflow = 'hidden';
+    setFormStatus('idle');
+    setSubmissionNotice(null);
   };
 
   const closeForm = () => {
     setFormOpen(false);
-    document.body.style.overflow = '';
   };
 
   const scrollTo = (id: string) => {
@@ -167,8 +221,8 @@ export default function LandingPage() {
       {mobileMenu && (
         <div className="mobile-overlay" onClick={() => setMobileMenu(false)}>
           <div className="mobile-overlay__content" onClick={(e) => e.stopPropagation()}>
-            <button className="mobile-overlay__close" onClick={() => setMobileMenu(false)}>
-              ✕
+            <button className="mobile-overlay__close" onClick={() => setMobileMenu(false)} aria-label="Fechar menu">
+              <X aria-hidden="true" size={24} />
             </button>
             <button onClick={() => scrollTo('services')}>Serviços</button>
             <button onClick={() => scrollTo('about')}>Sobre</button>
@@ -260,19 +314,19 @@ export default function LandingPage() {
             </p>
             <div className="about-mini-cards">
               <div className="about-mini-card">
-                <span className="about-mini-card__icon">✓</span>
+                <span className="about-mini-card__icon"><Check aria-hidden="true" size={16} /></span>
                 <span>Metodologia comprovada</span>
               </div>
               <div className="about-mini-card">
-                <span className="about-mini-card__icon">✓</span>
+                <span className="about-mini-card__icon"><Check aria-hidden="true" size={16} /></span>
                 <span>Equipe multidisciplinar</span>
               </div>
               <div className="about-mini-card">
-                <span className="about-mini-card__icon">✓</span>
+                <span className="about-mini-card__icon"><Check aria-hidden="true" size={16} /></span>
                 <span>IA integrada aos processos</span>
               </div>
               <div className="about-mini-card">
-                <span className="about-mini-card__icon">✓</span>
+                <span className="about-mini-card__icon"><Check aria-hidden="true" size={16} /></span>
                 <span>Suporte contínuo</span>
               </div>
             </div>
@@ -301,6 +355,48 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Results */}
+      <section id="results" className="section section--photo results-section">
+        <div className="parallax-bg" style={{ backgroundImage: "url('/bg-process.jpg')" }} />
+        <div className="section__inner">
+          <div className="section__header anim">
+            <span className="section__eyebrow">Impacto mensurável</span>
+            <h2>Resultados que Geram Impacto</h2>
+            <p className="section__sub">Decisões melhores aparecem no negócio: em oportunidades, eficiência e presença.</p>
+          </div>
+          <div className="results-grid">
+            {[
+              { value: '+42%', label: 'Aumento na geração de oportunidades.' },
+              { value: '-18%', label: 'Redução de custos operacionais.' },
+              { value: '+67%', label: 'Crescimento de presença digital.' },
+            ].map((result) => (
+              <article key={result.value} className="result-card anim">
+                <strong>{result.value}</strong>
+                <p>{result.label}</p>
+                <ArrowUpRight aria-hidden="true" size={18} />
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Metrics */}
+      <section className="stats stats--photo" aria-label="Métricas da Vertex Consulting">
+        <div className="stats__inner">
+          {[
+            { value: 30, prefix: '+', label: 'Projetos' },
+            { value: 15, prefix: '+', label: 'Clientes' },
+            { value: 98, suffix: '%', label: 'Satisfação' },
+            { value: 5, prefix: '+', label: 'Anos' },
+          ].map((metric) => (
+            <div key={metric.label} className="stats__item anim">
+              <div className="stats__num"><MetricCounter {...metric} /></div>
+              <div className="stats__label">{metric.label}</div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -357,18 +453,23 @@ export default function LandingPage() {
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
-            aria-label="Formulário de contato"
+            aria-labelledby="contact-form-title"
           >
             <button className="form-modal__close" onClick={closeForm} aria-label="Fechar">
-              ✕
+              <X aria-hidden="true" size={18} />
             </button>
 
             {formStatus === 'success' ? (
               <div className="form-modal__success">
                 <div className="form-modal__success-icon">✓</div>
-                <h3>Mensagem enviada!</h3>
+                <h3 id="contact-form-title">Mensagem enviada</h3>
                 <p>
                   Nossa equipe entrará em contato o mais breve possível.
+                </p>
+                <p className="form-msg form-msg--success" role="status">
+                  {submissionNotice === 'synced'
+                    ? 'Lead registrado no CRM interno e no Bolten.'
+                    : 'Lead registrado. A sincronização com o Bolten ficará pendente para nova tentativa.'}
                 </p>
                 <button className="btn btn--primary" onClick={closeForm}>
                   Fechar
@@ -378,7 +479,7 @@ export default function LandingPage() {
               <>
                 <div className="form-modal__header">
                   <span className="section__eyebrow">Contato</span>
-                  <h3>Fale com a Vertex Consulting</h3>
+                  <h3 id="contact-form-title">Fale com a Vertex Consulting</h3>
                   <p>
                     Preencha seus dados e nossa equipe entrará em contato
                     em até 24 horas.

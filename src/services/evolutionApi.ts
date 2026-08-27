@@ -1,6 +1,8 @@
 import type { QRCodeResponse, ConnectionState } from '../types';
 
-const DEFAULT_MESSAGE_TEMPLATE = 'Olá {nome}! Recebemos sua solicitação na Vertex Consulting. Nossa equipe entrará em contato em breve. Obrigado!';
+export const DEFAULT_MESSAGE_TEMPLATE = 'Olá! Vim pelo site da Vertex e gostaria de entender como a consultoria pode ajudar o meu negócio.';
+const LEGACY_MESSAGE_TEMPLATE = 'Olá {nome}! Recebemos sua solicitação na Vertex Consulting. Nossa equipe entrará em contato em breve. Obrigado!';
+const REQUEST_TIMEOUT_MS = 12000;
 
 // Variáveis injetadas via Vercel (Environment Variables)
 // Defina no Vercel: Dashboard > Project > Settings > Environment Variables
@@ -20,8 +22,19 @@ export function getEvolutionConfig() {
     apiUrl: ENV_API_URL,
     apiKey: ENV_API_KEY,
     instanceName: ENV_INSTANCE_NAME,
-    messageTemplate: ENV_MESSAGE_TEMPLATE,
+    messageTemplate: getMessageTemplate(),
   };
+}
+
+export function getMessageTemplate(): string {
+  if (typeof window === 'undefined') return ENV_MESSAGE_TEMPLATE;
+
+  const stored = localStorage.getItem('vertex_msg_template');
+  if (!stored || stored === LEGACY_MESSAGE_TEMPLATE) {
+    localStorage.setItem('vertex_msg_template', DEFAULT_MESSAGE_TEMPLATE);
+    return DEFAULT_MESSAGE_TEMPLATE;
+  }
+  return stored;
 }
 
 async function apiCall<T>(
@@ -40,17 +53,28 @@ async function apiCall<T>(
     'apikey': config.apiKey,
   };
 
-  const response = await fetch(url, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Evolution API error: ${response.status} - ${error}`);
   }
 
+  if (response.status === 204) return undefined as T;
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) return undefined as T;
   return response.json();
 }
 
@@ -84,6 +108,9 @@ export async function sendTextMessage(
   text: string,
 ): Promise<unknown> {
   const cleanNumber = phoneNumber.replace(/\D/g, '');
+  if (cleanNumber.length < 10) {
+    throw new Error('Número de WhatsApp inválido.');
+  }
   const formattedNumber = cleanNumber.startsWith('55') ? cleanNumber : `55${cleanNumber}`;
 
   return apiCall(`/message/sendText/${instanceName}`, 'POST', {
@@ -107,9 +134,7 @@ export async function sendLeadNotification(
   }
 
   // Template editável salvo no CRM (localStorage), fallback pra env var
-  const template = typeof window !== 'undefined'
-    ? (localStorage.getItem('vertex_msg_template') || ENV_MESSAGE_TEMPLATE)
-    : ENV_MESSAGE_TEMPLATE;
+  const template = getMessageTemplate();
 
   try {
     const message = buildMessage(template, name);

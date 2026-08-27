@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ArrowDown,
@@ -27,12 +27,11 @@ const heroPhotoSrc = "/manus-storage/alexandre-hero_12802c54.jpeg";
 const aboutPhotoSrc = "/manus-storage/alexandre-about_2a1a5b55.jpeg";
 const authorityPhotoSrc = "/manus-storage/alexandre-authority_26bdd9f1.jpeg";
 const whatsappNumber = "553186417690";
-
 const navItems = [
-  { label: "Mentoria", href: "#atuacao" },
   { label: "Para quem é", href: "#credenciais" },
-  { label: "Alexandre", href: "#sobre" },
+  { label: "Mentoria", href: "#atuacao" },
   { label: "Papo de Valor", href: "#resultados" },
+  { label: "Alexandre", href: "#sobre" },
   { label: "FAQ", href: "#faq" },
 ];
 
@@ -151,6 +150,9 @@ export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [submitted, setSubmitted] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactRendered, setContactRendered] = useState(false);
+  const closeTimerRef = useRef<number | null>(null);
   const [metrics, setMetrics] = useState({ years: 0, linkedin: 0, connections: 0 });
 
   useEffect(() => {
@@ -195,7 +197,43 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!contactRendered) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeContactModal();
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [contactRendered]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
   const closeMenu = () => setMenuOpen(false);
+  const openContactModal = () => {
+    setMenuOpen(false);
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    setContactRendered(true);
+    setSubmitted(false);
+    setContactOpen(true);
+  };
+  const closeContactModal = () => {
+    setContactOpen(false);
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => {
+      setContactRendered(false);
+      closeTimerRef.current = null;
+    }, 230);
+  };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -208,6 +246,7 @@ export default function Home() {
     const skill = String(data.get("habilidade") || "").trim();
     const objective = String(data.get("objetivo") || "").trim();
     const challenge = String(data.get("desafio") || "").trim();
+    const consent = data.get("consent") === "on";
 
     if (name.length < 3) {
       toast.error("Insira seu nome completo para continuar.");
@@ -225,6 +264,10 @@ export default function Home() {
       toast.error("Preencha seu momento, a habilidade e o objetivo principal.");
       return;
     }
+    if (!consent) {
+      toast.error("Aceite os termos de uso e a política de privacidade para continuar.");
+      return;
+    }
 
     const whatsappMessage = [
       "Olá, Alexandre! Vim pelo site e quero conversar sobre meu próximo nível profissional.",
@@ -236,13 +279,14 @@ export default function Home() {
       `Habilidade que quero desenvolver: ${skill}`,
       `Objetivo: ${objective}`,
       `Desafio atual: ${challenge || "Não informado"}`,
+      "Consentimento: termos de uso e política de privacidade aceitos",
     ].join("\n");
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(whatsappMessage)}`;
-    const whatsappWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-    if (!whatsappWindow) window.location.assign(whatsappUrl);
     setSubmitted(true);
     form.reset();
     toast.success("Mensagem preparada no WhatsApp.");
+    const whatsappWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    if (!whatsappWindow) window.location.assign(whatsappUrl);
   };
 
   return (
@@ -265,9 +309,9 @@ export default function Home() {
                 {item.label}
               </a>
             ))}
-            <a className="nav-cta" href="#contato" onClick={closeMenu}>
+            <button className="nav-cta" type="button" onClick={openContactModal}>
               Agendar conversa <ArrowUpRight size={16} aria-hidden="true" />
-            </a>
+            </button>
           </nav>
 
           <button
@@ -297,9 +341,9 @@ export default function Home() {
               </p>
               <div className="hero-actions">
                 {/* INTEGRAÇÃO CALENDLY: substituir este CTA pelo widget do Calendly */}
-                <a className="button button-gold" href="#contato">
+                <button className="button button-gold" type="button" onClick={openContactModal}>
                   Agendar uma conversa <ArrowUpRight size={18} aria-hidden="true" />
-                </a>
+                </button>
                 <a className="text-link light-link" href="#atuacao">
                   Conhecer a mentoria <ArrowDown size={16} aria-hidden="true" />
                 </a>
@@ -391,7 +435,7 @@ export default function Home() {
                       {service.bullets.map((bullet) => <li key={bullet}><Check size={15} aria-hidden="true" /> {bullet}</li>)}
                     </ul>
                     <div className="service-format"><span>Formato</span>{service.format}</div>
-                    <a className="service-link" href="#contato">{service.action} <ArrowUpRight size={16} aria-hidden="true" /></a>
+                    <button className="service-link" type="button" onClick={openContactModal}>{service.action} <ArrowUpRight size={16} aria-hidden="true" /></button>
                   </article>
                 );
               })}
@@ -459,32 +503,11 @@ export default function Home() {
               <p>Se você construiu uma carreira sólida em tecnologia, mas percebe que precisa desenvolver visão estratégica, liderança e posicionamento para chegar ao próximo nível, vamos conversar.</p>
               <div className="contact-guarantee"><Check size={16} aria-hidden="true" /><span>Sem compromisso. Se não houver fit, te indico outros caminhos.</span></div>
             </div>
-            <div className="form-card" data-reveal style={{ transitionDelay: "120ms" }}>
-              {submitted ? (
-                <div className="success-state" role="status">
-                  <div className="success-icon"><Check size={27} /></div>
-                  <p className="mini-label">Pedido recebido</p>
-                  <h3>Vamos conversar sobre o seu próximo passo.</h3>
-                  <p>Em até 48h entrarei em contato para encontrarmos o melhor horário.</p>
-                  <button type="button" className="text-link dark-link" onClick={() => setSubmitted(false)}>Enviar outra solicitação <ArrowUpRight size={16} /></button>
-                </div>
-              ) : (
-                <>
-                  <div className="form-heading"><span>01</span><p>Vamos mapear seu próximo passo</p></div>
-                  {/* PROSPECÇÃO WHATSAPP: os dados abaixo são organizados e enviados para o número comercial do Alexandre. */}
-                  <form id="cta-form" onSubmit={handleSubmit} noValidate>
-                    <label>Nome completo<input id="nome" name="nome" type="text" placeholder="Como posso te chamar?" autoComplete="name" required /></label>
-                    <label>E-mail corporativo<input id="email" name="email" type="email" placeholder="voce@empresa.com" autoComplete="email" required /></label>
-                    <label>LinkedIn (opcional)<input id="linkedin" name="linkedin" type="url" placeholder="linkedin.com/in/seu-nome" autoComplete="url" /></label>
-                    <label>Seu momento<select id="momento" name="momento" defaultValue="" required><option value="" disabled>Selecione uma opção</option><option value="lider-tecnico">Líder técnico ou coordenador</option><option value="gerente-head">Gerente ou Head</option><option value="cio-cto">CIO ou CTO</option><option value="transicao">Em transição para uma nova posição</option></select></label>
-                    <label>Habilidade a desenvolver<select id="habilidade" name="habilidade" defaultValue="" required><option value="" disabled>O que você quer fortalecer?</option><option value="visao-negocios">Visão estratégica e negócios</option><option value="lideranca">Liderança e gestão de pessoas</option><option value="posicionamento">Posicionamento executivo e influência</option><option value="governanca">Governança de TI e operações</option><option value="transformacao">Transformação digital</option><option value="cloud-dados">Cloud, dados e IA aplicada</option></select></label>
-                    <label>Objetivo principal<select id="objetivo" name="objetivo" defaultValue="" required><option value="" disabled>Selecione uma opção</option><option value="promocao">Ser promovido a Gerente ou Head</option><option value="c-level">Preparar-me para CIO/CTO</option><option value="executivo">Fortalecer minha atuação executiva</option><option value="negocio">Conectar melhor tecnologia e negócio</option></select></label>
-                    <label className="form-field-wide">Desafio atual (opcional)<textarea id="desafio" name="desafio" rows={2} placeholder="Em uma frase, o que está travando seu próximo passo?" /></label>
-                    <button className="button button-gold form-submit" type="submit">Agendar uma conversa <ArrowUpRight size={17} /></button>
-                    <small>Ao clicar, o WhatsApp abrirá com suas informações organizadas para o Alexandre.</small>
-                  </form>
-                </>
-              )}
+            <div className="contact-invite" data-reveal style={{ transitionDelay: "120ms" }}>
+              <p className="mini-label">Uma conversa pode mudar o próximo movimento</p>
+              <h3>Vamos mapear seu próximo passo.</h3>
+              <p>Compartilhe seu momento profissional e entenda quais competências podem levar sua experiência ao próximo nível.</p>
+              <button className="button button-gold" type="button" onClick={openContactModal}>Agendar uma conversa <ArrowUpRight size={17} /></button>
             </div>
           </div>
         </section>
@@ -512,6 +535,57 @@ export default function Home() {
           </div>
         </section>
       </main>
+
+      {contactRendered && (
+        <div
+          className={`contact-modal ${contactOpen ? "contact-modal--open" : "contact-modal--closing"}`}
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeContactModal();
+          }}
+        >
+          <div className="contact-modal-card" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+            <button className="modal-close" type="button" aria-label="Fechar formulário" onClick={closeContactModal} autoFocus={contactOpen}>
+              <X size={21} aria-hidden="true" />
+            </button>
+            {submitted ? (
+              <div className="success-state" role="status">
+                <div className="success-art" aria-hidden="true">
+                  <span className="success-art-halo" />
+                  <div className="success-icon"><Check size={27} /></div>
+                  <Sparkles className="success-art-sparkle" size={18} />
+                </div>
+                <p className="mini-label">Pedido recebido com sucesso</p>
+                <h3>Seu próximo movimento já começou.</h3>
+                <p>Obrigado por compartilhar seu momento. Alexandre entrará em contato para encontrar o melhor caminho para você.</p>
+                <div className="success-next-step"><span>Próximo passo</span><strong>Retorno em até 48h</strong></div>
+                <button type="button" className="text-link dark-link" onClick={() => setSubmitted(false)}>Enviar outra solicitação <ArrowUpRight size={16} /></button>
+              </div>
+            ) : (
+              <>
+                <div className="form-heading"><span>01</span><p id="contact-modal-title">Vamos mapear seu próximo passo</p></div>
+                {/* PROSPECÇÃO WHATSAPP: os dados abaixo são organizados e enviados para o número comercial do Alexandre. */}
+                <form id="cta-form" onSubmit={handleSubmit} noValidate>
+                  <label>Nome completo<input id="nome" name="nome" type="text" placeholder="Como posso te chamar?" autoComplete="name" required /></label>
+                  <label>E-mail corporativo<input id="email" name="email" type="email" placeholder="voce@empresa.com" autoComplete="email" required /></label>
+                  <label>LinkedIn (opcional)<input id="linkedin" name="linkedin" type="url" placeholder="linkedin.com/in/seu-nome" autoComplete="url" /></label>
+                  <label>Seu momento<select id="momento" name="momento" defaultValue="" required><option value="" disabled>Selecione uma opção</option><option value="lider-tecnico">Líder técnico ou coordenador</option><option value="gerente-head">Gerente ou Head</option><option value="cio-cto">CIO ou CTO</option><option value="transicao">Em transição para uma nova posição</option></select></label>
+                  <label>Habilidade a desenvolver<select id="habilidade" name="habilidade" defaultValue="" required><option value="" disabled>O que você quer fortalecer?</option><option value="visao-negocios">Visão estratégica e negócios</option><option value="lideranca">Liderança e gestão de pessoas</option><option value="posicionamento">Posicionamento executivo e influência</option><option value="governanca">Governança de TI e operações</option><option value="transformacao">Transformação digital</option><option value="cloud-dados">Cloud, dados e IA aplicada</option></select></label>
+                  <label>Objetivo principal<select id="objetivo" name="objetivo" defaultValue="" required><option value="" disabled>Selecione uma opção</option><option value="promocao">Ser promovido a Gerente ou Head</option><option value="c-level">Preparar-me para CIO/CTO</option><option value="executivo">Fortalecer minha atuação executiva</option><option value="negocio">Conectar melhor tecnologia e negócio</option></select></label>
+                  <label className="form-field-wide">Desafio atual (opcional)<textarea id="desafio" name="desafio" rows={2} placeholder="Em uma frase, o que está travando seu próximo passo?" /></label>
+                  <div className="consent-field form-field-wide">
+                    <input id="consent" name="consent" type="checkbox" required aria-describedby="consent-copy" />
+                    <label className="sr-only" htmlFor="consent">Aceito os termos de uso e a política de privacidade</label>
+                    <span id="consent-copy">Li e aceito os <a href="#top">Termos de Uso</a> e a <a href="#top">Política de Privacidade</a>.</span>
+                  </div>
+                  <button className="button button-gold form-submit" type="submit">Agendar uma conversa <ArrowUpRight size={17} /></button>
+                  <small>Ao clicar, o WhatsApp abrirá com suas informações organizadas para o Alexandre.</small>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       <footer className="site-footer">
         <div className="container footer-grid">

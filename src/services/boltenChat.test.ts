@@ -14,10 +14,21 @@ describe('gatilho de chatbot do Bolten', () => {
     expect(link).toContain(encodeURIComponent(BOLTEN_CHAT_TRIGGER_MESSAGE));
   });
 
-  it('aceita o link oficial do Bolten e não cria link inválido sem destino', () => {
-    expect(buildBoltenWhatsAppLink('', 'https://wa.me/5511999999999')).toContain(
-      encodeURIComponent(BOLTEN_CHAT_TRIGGER_MESSAGE),
+  it('aceita o link oficial do Bolten e não duplica a mensagem existente', () => {
+    const link = buildBoltenWhatsAppLink(
+      '',
+      `https://wa.me/554291534011?text=${encodeURIComponent(BOLTEN_CHAT_TRIGGER_MESSAGE)}`,
     );
+    expect(link).toBe(
+      `https://wa.me/554291534011?text=${encodeURIComponent(BOLTEN_CHAT_TRIGGER_MESSAGE)}`,
+    );
+    expect(link?.match(/(?:\?|&)text=/g)).toHaveLength(1);
+  });
+
+  it('preenche a mensagem quando o link oficial ainda não tem texto e não cria destino inválido', () => {
+    const link = buildBoltenWhatsAppLink('', 'https://wa.me/5511999999999');
+    expect(link).not.toBeNull();
+    expect(new URL(link!).searchParams.get('text')).toBe(BOLTEN_CHAT_TRIGGER_MESSAGE);
     expect(getBoltenWhatsAppLink()).toBeNull();
   });
 });

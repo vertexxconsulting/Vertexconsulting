@@ -5,8 +5,15 @@ const BOLTEN_WHATSAPP_LINK = import.meta.env.VITE_BOLTEN_WHATSAPP_LINK || '';
 
 export function buildBoltenWhatsAppLink(number = '', officialLink = ''): string | null {
   if (officialLink.startsWith('https://wa.me/') || officialLink.startsWith('https://api.whatsapp.com/send')) {
-    const separator = officialLink.includes('?') ? '&' : '?';
-    return `${officialLink}${separator}text=${encodeURIComponent(BOLTEN_CHAT_TRIGGER_MESSAGE)}`;
+    try {
+      const url = new URL(officialLink);
+      if (url.searchParams.get('text') !== BOLTEN_CHAT_TRIGGER_MESSAGE) {
+        url.searchParams.set('text', BOLTEN_CHAT_TRIGGER_MESSAGE);
+      }
+      return url.toString();
+    } catch {
+      return null;
+    }
   }
 
   const digits = number.replace(/\D/g, '');

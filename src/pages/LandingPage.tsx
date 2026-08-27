@@ -245,7 +245,7 @@ export default function LandingPage() {
         <div className="hero__orb hero__orb--2" />
         <div className="hero__orb hero__orb--3" />
         <div className="hero__inner">
-          <div className="hero__content">
+          <div className="hero__content anim">
             <div className="hero__badge">Consultoria Estratégica</div>
             <h1 className="hero__title">
               Transforme seu negócio com <span className="gold-text">estratégia e inteligência</span>
@@ -269,7 +269,7 @@ export default function LandingPage() {
               </button>
             </div>
           </div>
-          <div className="hero__visual">
+          <div className="hero__visual anim">
             <div className="hero__logo-float">
               <div className="hero__logo-ring">
                 <img src="/logo-hero.png" alt="Vertex Consulting" />

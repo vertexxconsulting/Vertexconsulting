@@ -64,7 +64,6 @@ export default function LandingPage() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-  const [submissionNotice, setSubmissionNotice] = useState<'synced' | 'pending' | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', company: '', service: '',
@@ -128,7 +127,7 @@ export default function LandingPage() {
     setFormStatus('sending');
 
     try {
-      const result = await createContact({
+      await createContact({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -139,7 +138,6 @@ export default function LandingPage() {
         message: formData.message,
       });
       setFormStatus('success');
-      setSubmissionNotice(result.boltenSynced ? 'synced' : 'pending');
       setFormData({
         name: '', email: '', phone: '', company: '', service: '',
         has_site: '', instagram: '', message: '',
@@ -182,7 +180,6 @@ export default function LandingPage() {
     setMobileMenu(false);
     setFormOpen(true);
     setFormStatus('idle');
-    setSubmissionNotice(null);
   };
 
   const closeForm = () => {
@@ -490,11 +487,6 @@ export default function LandingPage() {
                 <h3 id="contact-form-title">Mensagem enviada</h3>
                 <p>
                   Nossa equipe entrará em contato o mais breve possível.
-                </p>
-                <p className="form-msg form-msg--success" role="status">
-                  {submissionNotice === 'synced'
-                    ? 'Lead registrado no CRM interno e no Bolten.'
-                    : 'Lead registrado. A sincronização com o Bolten ficará pendente para nova tentativa.'}
                 </p>
                 <button className="btn btn--primary" onClick={closeForm}>
                   Fechar

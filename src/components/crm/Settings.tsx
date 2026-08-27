@@ -1,3 +1,0 @@
-// Configurações movidas para variáveis de ambiente do Vercel.
-// VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY,
-// VITE_EVOLUTION_API_URL, VITE_EVOLUTION_API_KEY, VITE_EVOLUTION_INSTANCE

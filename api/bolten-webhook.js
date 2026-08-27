@@ -136,7 +136,7 @@ async function claimWebhookEvent(lead, serviceKey) {
   if (!existing.ok) throw new Error(`Consulta de idempotência: ${existing.status}`);
   const records = await existing.json();
 
-  if (records[0]?.processed_at) return { duplicate: true };
+  if (records[0]?.processed_at) return { duplicate: true, inProgress: false };
   if (records.length > 0) {
     const claim = await fetchWithTimeout(
       `${base}/bolten_webhook_events?event_id=eq.${encodeURIComponent(lead.eventId)}&processed_at=is.null&or=${encodeURIComponent(`(processing_started_at.is.null,processing_started_at.lt.${leaseCutoff})`)}&select=event_id&limit=1`,
@@ -148,7 +148,10 @@ async function claimWebhookEvent(lead, serviceKey) {
     );
     if (!claim.ok) throw new Error(`Claim de idempotência: ${claim.status}`);
     const claimed = await claim.json();
-    return { duplicate: !Array.isArray(claimed) || claimed.length === 0 };
+    if (!Array.isArray(claimed) || claimed.length === 0) {
+      return { duplicate: false, inProgress: true };
+    }
+    return { duplicate: false, inProgress: false };
   }
 
   const created = await fetchWithTimeout(`${base}/bolten_webhook_events`, {
@@ -203,6 +206,7 @@ export default async function handler(req, res) {
   try {
     const claim = await claimWebhookEvent(lead, serviceKey);
     if (claim.duplicate) return res.status(200).json({ ok: true, duplicate: true });
+    if (claim.inProgress) return res.status(409).json({ error: 'Evento já está sendo processado' });
 
     const localId = await findExistingContact(lead, serviceKey);
     const row = buildLocalRow(lead, { includeCreateFields: !localId });

@@ -255,10 +255,10 @@ export default function Home() {
             <div className="hero-copy" data-reveal>
               <div className="eyebrow light-eyebrow"><span className="eyebrow-line" /> Tecnologia · Estratégia · Negócios</div>
               <h1 id="hero-title">
-                Sua experiência em tecnologia trouxe você até aqui. <em>Estratégia e liderança</em> levarão você ao próximo nível.
+                Sua experiência em tecnologia.<br /><em>Estratégia para o próximo nível.</em>
               </h1>
               <p className="hero-subtitle">
-                Desenvolva visão estratégica, posicionamento e liderança executiva com quem acumula mais de 32 anos de experiência em tecnologia, gestão e negócios no Brasil e no exterior.
+                Mentoria executiva para líderes de tecnologia que querem avançar para Gerente, Head, CIO ou CTO.
               </p>
               <div className="hero-actions">
                 {/* INTEGRAÇÃO CALENDLY: substituir este CTA pelo widget do Calendly */}

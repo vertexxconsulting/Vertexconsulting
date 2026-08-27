@@ -425,3 +425,36 @@ h1 em, h2 em { color: var(--gold-light); font-style: italic; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
+
+/* Refinamento visual v2 — fotografia real e assinatura Alexandre Azeredo */
+.hero-image-frame { position: absolute; inset: 0 10% 3% 4%; overflow: hidden; border: 1px solid rgba(201, 169, 97, 0.52); background: #07172e; box-shadow: 0 26px 80px rgba(0, 0, 0, 0.28), inset 0 0 70px rgba(201, 169, 97, 0.08); }
+.hero-image-frame::before { position: absolute; z-index: 3; inset: 24px; border: 1px solid rgba(255, 255, 255, 0.28); content: ""; pointer-events: none; }
+.hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 21%; filter: saturate(0.78) contrast(1.05); }
+.hero-photo-shade { position: absolute; z-index: 1; inset: 0; background: linear-gradient(180deg, rgba(6, 19, 39, 0.08) 18%, rgba(6, 19, 39, 0.1) 43%, rgba(6, 19, 39, 0.84) 100%), linear-gradient(90deg, rgba(6, 19, 39, 0.3), transparent 45%); }
+.hero-image-frame .visual-kicker { z-index: 4; }
+.hero-image-frame .visual-caption { z-index: 4; }
+.hero-brand-chip { position: absolute; z-index: 5; right: -4px; bottom: 16%; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(201, 169, 97, 0.62); background: rgba(6, 19, 39, 0.9); padding: 8px 13px 8px 8px; backdrop-filter: blur(12px); }
+.hero-brand-chip img { width: 76px; height: 48px; object-fit: cover; object-position: center; }
+.hero-brand-chip span { color: var(--gold-light); font-size: 8px; font-weight: 800; letter-spacing: 0.13em; line-height: 1.45; text-transform: uppercase; }
+.about-secondary-photo { position: absolute; z-index: 4; right: 3%; bottom: 14%; width: 145px; height: 188px; overflow: hidden; border: 7px solid var(--cream); box-shadow: 0 18px 35px rgba(6, 19, 39, 0.2); transform: rotate(4deg); transition: transform 220ms var(--ease-out); }
+.about-secondary-photo:hover { transform: rotate(0deg) translateY(-5px); }
+.about-secondary-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 18%; filter: saturate(0.76); }
+.about-signature-card { position: absolute; z-index: 4; bottom: 0; left: -18px; display: grid; width: 152px; height: 69px; place-items: center; overflow: hidden; border: 1px solid var(--gold); background: #fff; box-shadow: 0 12px 25px rgba(6, 19, 39, 0.14); }
+.about-signature-card img { width: 100%; height: 100%; object-fit: cover; }
+
+@media (max-width: 780px) {
+  .hero-image-frame { inset: 0 8% 3% 4%; }
+  .hero-brand-chip { right: -1px; bottom: 13%; }
+  .hero-brand-chip img { width: 66px; height: 41px; }
+  .about-secondary-photo { right: 1%; width: 115px; height: 150px; }
+  .about-signature-card { left: -8px; width: 132px; height: 60px; }
+}
+
+@media (max-width: 480px) {
+  .hero-image-frame { right: 5%; }
+  .hero-brand-chip { right: -2px; }
+  .hero-brand-chip img { width: 58px; height: 36px; }
+  .hero-brand-chip span { font-size: 7px; }
+  .about-secondary-photo { width: 95px; height: 125px; }
+  .about-signature-card { width: 116px; height: 53px; }
+}

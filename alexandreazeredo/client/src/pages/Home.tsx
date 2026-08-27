@@ -22,41 +22,44 @@ import {
   X,
 } from "lucide-react";
 
-const logoSrc = "/manus-storage/Gemini_Generated_Image_v49e0jv49e0jv49e_1922c604.jpg";
-const profileSrc = "/manus-storage/alexandre-profile-instagram_22971f2c.jpg";
-const heroTextureSrc = "/manus-storage/alexandre-hero-texture_d02dac37.jpg";
+const logoDarkSrc = "/manus-storage/alexandre-logo-dark_7b12d2cf.jpeg";
+const logoLightSrc = "/manus-storage/alexandre-logo-light_bcfd03cb.jpeg";
+const heroPhotoSrc = "/manus-storage/alexandre-hero_12802c54.jpeg";
+const aboutPhotoSrc = "/manus-storage/alexandre-about_2a1a5b55.jpeg";
+const authorityPhotoSrc = "/manus-storage/alexandre-authority_26bdd9f1.jpeg";
 
 const navItems = [
-  { label: "Sobre", href: "#sobre" },
-  { label: "Atuação", href: "#atuacao" },
-  { label: "Resultados", href: "#resultados" },
+  { label: "Mentoria", href: "#atuacao" },
+  { label: "Para quem é", href: "#credenciais" },
+  { label: "Alexandre", href: "#sobre" },
+  { label: "Papo de Valor", href: "#resultados" },
   { label: "FAQ", href: "#faq" },
 ];
 
 const credentials = [
   {
     icon: GraduationCap,
-    eyebrow: "Formação executiva",
-    title: "Estratégia antes da ferramenta",
-    text: "Harvard Business School e NOVA FCT Executive Education, com foco em liderança, estratégia e transformação.",
+    eyebrow: "32+ anos",
+    title: "Experiência profissional",
+    text: "Mais de três décadas liderando projetos, equipes, operações e transformações tecnológicas no Brasil e no exterior.",
+  },
+  {
+    icon: Network,
+    eyebrow: "Experiência internacional",
+    title: "Visão sem fronteiras",
+    text: "Atuação em projetos e operações que conectam diferentes contextos, culturas e desafios de negócio.",
+  },
+  {
+    icon: BriefcaseBusiness,
+    eyebrow: "Tecnologia + negócios",
+    title: "A ponte que gera valor",
+    text: "Experiência em Transformação Digital, Governança, ERP, PMO, Cloud, Dados e estratégia empresarial.",
   },
   {
     icon: Mic2,
     eyebrow: "Papo de Valor",
-    title: "Conversas que ampliam repertório",
-    text: "Host de um podcast que aproxima líderes de tecnologia dos desafios reais de quem decide.",
-  },
-  {
-    icon: BriefcaseBusiness,
-    eyebrow: "Experiência C-Level",
-    title: "Visão dos dois lados da mesa",
-    text: "Vivência como IT Manager, CIO, CTO e líder de transformação digital em ambientes complexos.",
-  },
-  {
-    icon: Network,
-    eyebrow: "Comunidade e rede",
-    title: "Capital relacional que abre caminhos",
-    text: "8.800+ profissionais no LinkedIn e uma rede construída com intenção, generosidade e consistência.",
+    title: "Conversas com quem decide",
+    text: "Host de conversas com executivos, especialistas e empreendedores sobre tecnologia, carreira, inovação e negócios.",
   },
 ];
 
@@ -64,82 +67,82 @@ const services = [
   {
     number: "01",
     icon: Target,
-    title: "Mentoria Executiva 1:1",
-    audience: "Para gerentes e diretores de TI que almejam a cadeira de CIO ou CTO.",
+    title: "Entenda onde você está",
+    audience: "Um diagnóstico honesto do seu momento profissional, competências, desafios e objetivos.",
     bullets: [
-      "Plano de carreira personalizado",
-      "Preparação para entrevistas e promoções",
-      "Networking estratégico e visibilidade",
-      "Acesso direto via WhatsApp entre sessões",
+      "Leitura do momento atual",
+      "Clareza sobre lacunas e forças",
+      "Objetivo executivo bem definido",
+      "Prioridades para o próximo ciclo",
     ],
-    format: "Sessões quinzenais de 60min · 3 a 6 meses",
-    action: "Quero avançar na carreira",
+    format: "O ponto de partida para qualquer evolução consistente",
+    action: "Quero entender meu momento",
   },
   {
     number: "02",
     icon: Building2,
-    title: "Advisory para CIOs",
-    audience: "Para CIOs em exercício ou em transição que precisam de clareza para decidir.",
+    title: "Defina sua estratégia",
+    audience: "Um direcionamento claro para reduzir a distância entre a posição atual e a posição desejada.",
     bullets: [
-      "Estratégia de TI alinhada ao negócio",
-      "Governança e gestão de portfólio",
-      "Transformação digital e IA aplicada",
-      "Relacionamento com board e stakeholders",
+      "Visão de negócio aplicada à carreira",
+      "Posicionamento e comunicação executiva",
+      "Plano para desenvolver influência",
+      "Decisões guiadas por intenção",
     ],
-    format: "Acompanhamento mensal · workshops sob demanda",
-    action: "Conversar sobre advisory",
+    format: "Estratégia para transformar experiência em posicionamento",
+    action: "Quero definir minha estratégia",
   },
   {
     number: "03",
     icon: Presentation,
-    title: "Palestras e Treinamentos",
-    audience: "Para empresas que querem elevar o nível da liderança em tecnologia.",
+    title: "Prepare-se para o próximo nível",
+    audience: "Competências, decisões e posicionamento para estar preparado quando a oportunidade surgir.",
     bullets: [
-      "Liderança em TI para o século 21",
-      "Transformação digital na prática",
-      "IA aplicada a operações corporativas",
-      "Do técnico ao estratégico: a jornada do CIO",
+      "Liderança de pessoas e decisões",
+      "Conexão entre tecnologia e resultado",
+      "Maturidade para lidar com complexidade",
+      "Preparação para Gerente, Head, CIO ou CTO",
     ],
-    format: "In-company ou online · 60–90min + Q&A",
-    action: "Solicitar uma proposta",
+    format: "Desenvolvimento contínuo para oportunidades maiores",
+    action: "Quero acelerar minha carreira",
   },
 ];
 
 const testimonials = [
   {
-    quote: "O Alexandre me ajudou a estruturar minha jornada rumo ao CIO. Em 6 meses, consegui uma promoção para Diretoria de TI.",
-    role: "Diretor de TI · depoimento de mentorado",
+    quote: "De profissional técnico competente a líder capaz de conectar tecnologia, pessoas, estratégia e negócios.",
+    role: "Antes → Depois · visão estratégica",
   },
   {
-    quote: "O advisory do Alexandre transformou nossa governança de TI. Hoje temos clareza estratégica e alinhamento com o board.",
-    role: "CIO · depoimento de cliente",
+    quote: "De executar demandas a participar das decisões que definem o futuro do negócio.",
+    role: "Antes → Depois · influência executiva",
   },
   {
-    quote: "As palestras do Alexandre são práticas, diretas e inspiradoras. Nosso time saiu com ações concretas.",
-    role: "HR Director · depoimento corporativo",
+    quote: "De esperar pela próxima oportunidade a preparar-se estrategicamente para ela.",
+    role: "Antes → Depois · posicionamento",
   },
 ];
 
 const faqItems = [
   {
-    question: "Como funciona a mentoria 1:1?",
-    answer: "Sessões quinzenais de 60min via Zoom, com plano personalizado, tarefas práticas e acesso direto no WhatsApp.",
+    question: "Para quem é a mentoria?",
+    answer: "Para profissionais e líderes de tecnologia que desejam acelerar seu desenvolvimento e preparar-se para posições de maior responsabilidade.",
   },
   {
-    question: "Qual o investimento?",
-    answer: "Cada caso é único. Após a sessão gratuita, apresento uma proposta sob medida para seu objetivo e momento de carreira.",
+    question: "Preciso já ocupar uma posição de liderança?",
+    answer: "Não necessariamente. O mais importante é existir um objetivo concreto de crescimento e desenvolvimento profissional.",
   },
   {
-    question: "Você atende empresas ou apenas indivíduos?",
-    answer: "Ambos. Tenho programas de mentoria individual, advisory para CIOs e palestras/treinamentos corporativos.",
+    question: "A mentoria é individual ou em grupo?",
+    answer: "O formato é definido a partir do seu momento, objetivo e aderência à proposta. A conversa inicial serve justamente para entender esse contexto.",
   },
   {
-    question: "Como agendo uma sessão gratuita?",
-    answer: "Preencha o formulário acima. Em até 48h, entro em contato para agendar.",
+    question: "Como são realizados os encontros?",
+    answer: "O primeiro passo é uma conversa para compreender seu momento profissional e verificar se existe aderência entre seus objetivos e a proposta da mentoria.",
   },
   {
-    question: "Você emite nota fiscal?",
-    answer: "Sim, para indivíduos (CPF) e empresas (CNPJ).",
+    question: "Como sei se a mentoria é adequada para mim?",
+    answer: "Se você percebe que a competência técnica já não é suficiente para o próximo nível, a conversa inicial ajuda a identificar os caminhos possíveis.",
   },
 ];
 
@@ -213,7 +216,7 @@ export default function Home() {
         <div className="container header-inner">
           <a className="brand" href="#top" aria-label="Alexandre Azeredo — início">
             <span className="brand-logo-wrap">
-              <img src={logoSrc} alt="Logo Result" className="brand-logo" />
+              <img src={logoDarkSrc} alt="Logo Alexandre Azeredo" className="brand-logo" />
             </span>
             <span className="brand-copy">
               <strong>Alexandre Azeredo</strong>
@@ -246,46 +249,46 @@ export default function Home() {
 
       <main id="top">
         <section className="hero-section" aria-labelledby="hero-title">
-          <div className="hero-texture" style={{ backgroundImage: `url(${heroTextureSrc})` }} aria-hidden="true" />
           <div className="hero-orb hero-orb-one" aria-hidden="true" />
           <div className="hero-orb hero-orb-two" aria-hidden="true" />
           <div className="container hero-grid">
             <div className="hero-copy" data-reveal>
-              <div className="eyebrow light-eyebrow"><span className="eyebrow-line" /> Estratégia · Liderança · Tecnologia</div>
+              <div className="eyebrow light-eyebrow"><span className="eyebrow-line" /> Tecnologia · Estratégia · Negócios</div>
               <h1 id="hero-title">
-                Transformo líderes de TI em <em>CIOs</em> e empresas em organizações digitais.
+                Sua experiência em tecnologia trouxe você até aqui. <em>Estratégia e liderança</em> levarão você ao próximo nível.
               </h1>
               <p className="hero-subtitle">
-                Mentoria executiva 1:1 e advisory estratégico para profissionais que querem chegar — ou se consolidar — no C-Level de Tecnologia.
+                Desenvolva visão estratégica, posicionamento e liderança executiva com quem acumula mais de 32 anos de experiência em tecnologia, gestão e negócios no Brasil e no exterior.
               </p>
               <div className="hero-actions">
                 {/* INTEGRAÇÃO CALENDLY: substituir este CTA pelo widget do Calendly */}
                 <a className="button button-gold" href="#contato">
-                  Agendar sessão estratégica gratuita <ArrowUpRight size={18} aria-hidden="true" />
+                  Agendar uma conversa <ArrowUpRight size={18} aria-hidden="true" />
                 </a>
                 <a className="text-link light-link" href="#atuacao">
-                  Ver como posso ajudar <ArrowDown size={16} aria-hidden="true" />
+                  Conhecer a mentoria <ArrowDown size={16} aria-hidden="true" />
                 </a>
               </div>
               <div className="hero-proof" aria-label="Credenciais principais">
-                <span><Check size={15} aria-hidden="true" /> 8.800+ no LinkedIn</span>
+                <span><Check size={15} aria-hidden="true" /> 32+ anos de experiência</span>
+                <span><Check size={15} aria-hidden="true" /> Brasil e exterior</span>
                 <span><Check size={15} aria-hidden="true" /> Host do Papo de Valor</span>
-                <span><Check size={15} aria-hidden="true" /> Harvard · NOVA FCT</span>
               </div>
             </div>
 
             <div className="hero-visual" data-reveal style={{ transitionDelay: "120ms" }}>
-              <div className="visual-frame">
-                <div className="visual-kicker">RESULT / 01</div>
-                <img src={logoSrc} alt="Logo dourado com seta ascendente e a palavra Result" className="hero-logo" />
+              <div className="hero-image-frame">
+                <img src={heroPhotoSrc} alt="Alexandre Azeredo em ambiente corporativo" className="hero-photo" />
+                <div className="hero-photo-shade" aria-hidden="true" />
+                <div className="visual-kicker">ALEXANDRE AZEREDO / 32+ ANOS</div>
                 <div className="visual-caption">
                   <span className="caption-dot" />
-                  <span>Clareza para decisões que movem a carreira.</span>
+                  <span>Experiência para preparar o próximo movimento.</span>
                 </div>
               </div>
-              <div className="portrait-chip">
-                <img src={profileSrc} alt="Alexandre Azeredo, foto de perfil" />
-                <span><strong>Alexandre Azeredo</strong><small>Mentor Executivo</small></span>
+              <div className="hero-brand-chip">
+                <img src={logoDarkSrc} alt="Logo Alexandre Azeredo" />
+                <span>Mentor Executivo<br />CIO Advisor</span>
               </div>
               <div className="visual-index">AA <span>26</span></div>
             </div>
@@ -310,7 +313,7 @@ export default function Home() {
             <div className="section-heading split-heading" data-reveal>
               <div>
                 <div className="eyebrow"><span className="eyebrow-line" /> O que sustenta o trabalho</div>
-                <h2 id="credentials-title">Mais do que experiência.<br /><em>Repertório para decidir.</em></h2>
+                <h2 id="credentials-title">32+ anos transformando<br /><em>tecnologia em estratégia.</em></h2>
               </div>
               <p>Uma combinação rara de vivência executiva, formação contínua e proximidade com quem está construindo o futuro da tecnologia.</p>
             </div>
@@ -335,7 +338,7 @@ export default function Home() {
             <div className="section-heading services-heading" data-reveal>
               <div>
                 <div className="eyebrow"><span className="eyebrow-line" /> A atuação</div>
-                <h2 id="services-title">Como posso <em>te ajudar</em></h2>
+                <h2 id="services-title">Seu próximo nível<br /><em>começa com clareza.</em></h2>
               </div>
               <p>O próximo nível pede uma abordagem sob medida. Escolha o contexto que mais se aproxima do seu momento.</p>
             </div>
@@ -366,7 +369,7 @@ export default function Home() {
             <div className="results-intro" data-reveal>
               <div>
                 <div className="eyebrow light-eyebrow"><span className="eyebrow-line" /> Quem já trabalhou comigo</div>
-                <h2 id="results-title">Direção que se transforma<br /><em>em movimento.</em></h2>
+                <h2 id="results-title">De especialista em tecnologia<br /><em>a líder estratégico.</em></h2>
               </div>
               <div className="results-note"><Quote size={27} strokeWidth={1.2} aria-hidden="true" /><span>Resultados consistentes começam com uma conversa honesta sobre o próximo passo.</span></div>
             </div>
@@ -392,17 +395,19 @@ export default function Home() {
           <div className="container about-grid">
             <div className="about-visual" data-reveal>
               <div className="about-image-frame">
-                <img src={profileSrc} alt="Alexandre Azeredo" loading="lazy" />
+                <img src={aboutPhotoSrc} alt="Alexandre Azeredo trabalhando em ambiente executivo" loading="lazy" />
                 <div className="about-image-overlay">AA <span>Mentoria & Advisory</span></div>
               </div>
+              <div className="about-secondary-photo"><img src={authorityPhotoSrc} alt="Alexandre Azeredo em ambiente corporativo" loading="lazy" /></div>
+              <div className="about-signature-card"><img src={logoLightSrc} alt="Logo Alexandre Azeredo" /></div>
               <div className="about-side-note"><Sparkles size={15} aria-hidden="true" /> Sem atalhos. Com direção.</div>
             </div>
             <div className="about-copy" data-reveal style={{ transitionDelay: "120ms" }}>
               <div className="eyebrow"><span className="eyebrow-line" /> Sobre Alexandre Azeredo</div>
-              <h2 id="about-title">A experiência de quem já esteve <em>nos dois lados da mesa.</em></h2>
-              <p>Com mais de [X] anos em liderança de TI, já estive nos dois lados da mesa: como executivo tomando decisões estratégicas e como mentor guiando a próxima geração de CIOs.</p>
-              <p>Minha trajetória inclui formação executiva na Harvard Business School e NOVA FCT, além da criação do Podcast Papo de Valor, onde entrevisto líderes de TI sobre os desafios reais da área.</p>
-              <p>Meu propósito é acelerar sua jornada até o C-Level, sem atalhos, mas com direção clara, estratégia e networking.</p>
+              <h2 id="about-title">Aprenda com quem já percorreu <em>esse caminho.</em></h2>
+              <p>Sou Alexandre Azeredo. Há mais de 32 anos construo minha carreira na interseção entre Tecnologia, Estratégia e Negócios.</p>
+              <p>Ao longo dessa trajetória, liderei projetos, operações e transformações no Brasil e no exterior, passando por Transformação Digital, Governança de TI, ERP, PMO, Cloud, Dados e estruturação de operações.</p>
+              <p>Hoje, utilizo esse repertório para ajudar profissionais de tecnologia a acelerarem suas carreiras e se prepararem para posições de maior responsabilidade. Tecnologia só se torna estratégica quando consegue gerar valor para o negócio.</p>
               <div className="about-actions">
                 <a className="button button-dark" href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer">Ver LinkedIn <Linkedin size={17} /></a>
                 <a className="button button-outline" href="https://www.youtube.com/results?search_query=Papo+de+Valor+Alexandre+Azeredo" target="_blank" rel="noreferrer">Ouvir Podcast <Play size={16} fill="currentColor" /></a>
@@ -416,8 +421,8 @@ export default function Home() {
           <div className="container contact-grid">
             <div className="contact-copy" data-reveal>
               <div className="eyebrow light-eyebrow"><span className="eyebrow-line" /> O próximo movimento</div>
-              <h2 id="contact-title">Pronto para o próximo nível da sua <em>carreira?</em></h2>
-              <p>Em uma sessão estratégica gratuita de 30 minutos, avaliamos se faz sentido trabalharmos juntos.</p>
+              <h2 id="contact-title">A posição que você deseja ocupar amanhã exige <em>preparação hoje.</em></h2>
+              <p>Se você construiu uma carreira sólida em tecnologia, mas percebe que precisa desenvolver visão estratégica, liderança e posicionamento para chegar ao próximo nível, vamos conversar.</p>
               <div className="contact-guarantee"><Check size={16} aria-hidden="true" /><span>Sem compromisso. Se não houver fit, te indico outros caminhos.</span></div>
             </div>
             <div className="form-card" data-reveal style={{ transitionDelay: "120ms" }}>
@@ -438,7 +443,7 @@ export default function Home() {
                     <label>E-mail corporativo<input id="email" name="email" type="email" placeholder="voce@empresa.com" autoComplete="email" required /></label>
                     <label>LinkedIn (URL)<input id="linkedin" name="linkedin" type="url" placeholder="linkedin.com/in/seu-nome" autoComplete="url" required /></label>
                     <label>Seu objetivo<select id="objetivo" name="objetivo" defaultValue="" required><option value="" disabled>Selecione uma opção</option><option value="c-level">Quero me tornar CIO/CTO</option><option value="advisory">Já sou CIO e quero advisory</option><option value="palestra">Quero contratar palestra/treinamento</option><option value="outro">Outro</option></select></label>
-                    <button className="button button-gold form-submit" type="submit">Solicitar sessão estratégica gratuita <ArrowUpRight size={17} /></button>
+                    <button className="button button-gold form-submit" type="submit">Agendar uma conversa <ArrowUpRight size={17} /></button>
                     <small>Ao enviar, você concorda em ser contatado sobre esta solicitação.</small>
                   </form>
                 </>
@@ -473,7 +478,7 @@ export default function Home() {
 
       <footer className="site-footer">
         <div className="container footer-grid">
-          <div className="footer-brand"><a className="brand footer-logo" href="#top"><span className="brand-logo-wrap"><img src={logoSrc} alt="Logo Result" className="brand-logo" /></span><span className="brand-copy"><strong>Alexandre Azeredo</strong><span>Mentor Executivo · CIO Advisor</span></span></a><p>Estratégia que posiciona.<br />Liderança que transforma.</p><div className="social-links"><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a><a href="https://www.instagram.com/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={17} /></a><a href="https://www.youtube.com/results?search_query=Papo+de+Valor+Alexandre+Azeredo" target="_blank" rel="noreferrer" aria-label="Podcast Papo de Valor"><Mic2 size={17} /></a></div></div>
+          <div className="footer-brand"><a className="brand footer-logo" href="#top"><span className="brand-logo-wrap"><img src={logoDarkSrc} alt="Logo Alexandre Azeredo" className="brand-logo" /></span><span className="brand-copy"><strong>Alexandre Azeredo</strong><span>Mentor Executivo · CIO Advisor</span></span></a><p>Estratégia que posiciona.<br />Liderança que transforma.</p><div className="social-links"><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a><a href="https://www.instagram.com/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={17} /></a><a href="https://www.youtube.com/results?search_query=Papo+de+Valor+Alexandre+Azeredo" target="_blank" rel="noreferrer" aria-label="Podcast Papo de Valor"><Mic2 size={17} /></a></div></div>
           <div className="footer-column"><p className="footer-label">Explorar</p><a href="#sobre">Sobre Alexandre</a><a href="#atuacao">Atuação</a><a href="#resultados">Resultados</a><a href="#faq">Perguntas frequentes</a></div>
           <div className="footer-column"><p className="footer-label">Contato</p><a href="mailto:contato@alexandreazeredo.com.br"><Mail size={15} /> contato@alexandreazeredo.com.br</a><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer"><Linkedin size={15} /> linkedin.com/in/alexandreazeredo</a></div>
         </div>

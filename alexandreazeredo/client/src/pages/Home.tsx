@@ -27,6 +27,7 @@ const logoLightSrc = "/manus-storage/alexandre-logo-light_bcfd03cb.jpeg";
 const heroPhotoSrc = "/manus-storage/alexandre-hero_12802c54.jpeg";
 const aboutPhotoSrc = "/manus-storage/alexandre-about_2a1a5b55.jpeg";
 const authorityPhotoSrc = "/manus-storage/alexandre-authority_26bdd9f1.jpeg";
+const whatsappNumber = "553186417690";
 
 const navItems = [
   { label: "Mentoria", href: "#atuacao" },
@@ -151,6 +152,7 @@ export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [submitted, setSubmitted] = useState(false);
+  const [metrics, setMetrics] = useState({ years: 0, linkedin: 0, connections: 0 });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -171,9 +173,26 @@ export default function Home() {
 
     document.querySelectorAll("[data-reveal]").forEach((element) => revealObserver.observe(element));
 
+    const metricTargets = { years: 32, linkedin: 8800, connections: 500 };
+    const countStart = performance.now();
+    const countDuration = 1250;
+    let countFrame = 0;
+    const animateMetrics = (now: number) => {
+      const progress = Math.min((now - countStart) / countDuration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      setMetrics({
+        years: Math.floor(metricTargets.years * easedProgress),
+        linkedin: Math.floor(metricTargets.linkedin * easedProgress),
+        connections: Math.floor(metricTargets.connections * easedProgress),
+      });
+      if (progress < 1) countFrame = requestAnimationFrame(animateMetrics);
+    };
+    countFrame = requestAnimationFrame(animateMetrics);
+
     return () => {
       window.removeEventListener("scroll", onScroll);
       revealObserver.disconnect();
+      cancelAnimationFrame(countFrame);
     };
   }, []);
 
@@ -186,7 +205,10 @@ export default function Home() {
     const name = String(data.get("nome") || "").trim();
     const email = String(data.get("email") || "").trim();
     const linkedin = String(data.get("linkedin") || "").trim();
+    const moment = String(data.get("momento") || "").trim();
+    const skill = String(data.get("habilidade") || "").trim();
     const objective = String(data.get("objetivo") || "").trim();
+    const challenge = String(data.get("desafio") || "").trim();
 
     if (name.length < 3) {
       toast.error("Insira seu nome completo para continuar.");
@@ -196,18 +218,32 @@ export default function Home() {
       toast.error("Insira um e-mail válido.");
       return;
     }
-    if (!linkedin.includes("linkedin.com")) {
-      toast.error("Insira uma URL válida do LinkedIn.");
+    if (linkedin && !linkedin.includes("linkedin.com")) {
+      toast.error("Insira uma URL válida do LinkedIn ou deixe o campo em branco.");
       return;
     }
-    if (!objective) {
-      toast.error("Selecione o seu objetivo principal.");
+    if (!moment || !skill || !objective) {
+      toast.error("Preencha seu momento, a habilidade e o objetivo principal.");
       return;
     }
 
+    const whatsappMessage = [
+      "Olá, Alexandre! Vim pelo site e quero conversar sobre meu próximo nível profissional.",
+      "",
+      `Nome: ${name}`,
+      `E-mail: ${email}`,
+      `LinkedIn: ${linkedin || "Não informado"}`,
+      `Momento profissional: ${moment}`,
+      `Habilidade que quero desenvolver: ${skill}`,
+      `Objetivo: ${objective}`,
+      `Desafio atual: ${challenge || "Não informado"}`,
+    ].join("\n");
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(whatsappMessage)}`;
+    const whatsappWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    if (!whatsappWindow) window.location.assign(whatsappUrl);
     setSubmitted(true);
     form.reset();
-    toast.success("Pedido recebido. Em até 48h entraremos em contato.");
+    toast.success("Mensagem preparada no WhatsApp.");
   };
 
   return (
@@ -298,13 +334,13 @@ export default function Home() {
 
         <section className="trust-bar" aria-label="Resumo de autoridade">
           <div className="container trust-grid">
-            <div className="trust-item"><span className="trust-number">8.8k</span><span>profissionais<br />na rede</span></div>
+            <div className="trust-item"><span className="trust-number"><strong>{metrics.years}+</strong></span><span>anos de<br />experiência</span></div>
             <div className="trust-divider" />
-            <div className="trust-item"><span className="trust-number">01</span><span>podcast para<br />líderes de TI</span></div>
+            <div className="trust-item"><span className="trust-number"><strong>{new Intl.NumberFormat("pt-BR").format(metrics.linkedin)}+</strong></span><span>profissionais<br />no LinkedIn</span></div>
             <div className="trust-divider" />
-            <div className="trust-item"><span className="trust-number">C</span><span>visão de<br />C-Level</span></div>
+            <div className="trust-item"><span className="trust-number"><strong>{new Intl.NumberFormat("pt-BR").format(metrics.connections)}+</strong></span><span>conexões<br />profissionais</span></div>
             <div className="trust-divider" />
-            <div className="trust-quote">“Carreira executiva não se improvisa.<br /><strong>Constrói-se com intenção.</strong>”</div>
+            <div className="trust-quote">“Experiência técnica é a base.<br /><strong>Estratégia é o próximo nível.</strong>”</div>
           </div>
         </section>
 
@@ -436,15 +472,18 @@ export default function Home() {
                 </div>
               ) : (
                 <>
-                  <div className="form-heading"><span>01</span><p>Conte um pouco sobre o seu momento</p></div>
-                  {/* INTEGRAÇÃO CRM: substituir este formulário pelo form do HubSpot/Pipedrive */}
+                  <div className="form-heading"><span>01</span><p>Vamos mapear seu próximo passo</p></div>
+                  {/* PROSPECÇÃO WHATSAPP: os dados abaixo são organizados e enviados para o número comercial do Alexandre. */}
                   <form id="cta-form" onSubmit={handleSubmit} noValidate>
                     <label>Nome completo<input id="nome" name="nome" type="text" placeholder="Como posso te chamar?" autoComplete="name" required /></label>
                     <label>E-mail corporativo<input id="email" name="email" type="email" placeholder="voce@empresa.com" autoComplete="email" required /></label>
-                    <label>LinkedIn (URL)<input id="linkedin" name="linkedin" type="url" placeholder="linkedin.com/in/seu-nome" autoComplete="url" required /></label>
-                    <label>Seu objetivo<select id="objetivo" name="objetivo" defaultValue="" required><option value="" disabled>Selecione uma opção</option><option value="c-level">Quero me tornar CIO/CTO</option><option value="advisory">Já sou CIO e quero advisory</option><option value="palestra">Quero contratar palestra/treinamento</option><option value="outro">Outro</option></select></label>
+                    <label>LinkedIn (opcional)<input id="linkedin" name="linkedin" type="url" placeholder="linkedin.com/in/seu-nome" autoComplete="url" /></label>
+                    <label>Seu momento<select id="momento" name="momento" defaultValue="" required><option value="" disabled>Selecione uma opção</option><option value="lider-tecnico">Líder técnico ou coordenador</option><option value="gerente-head">Gerente ou Head</option><option value="cio-cto">CIO ou CTO</option><option value="transicao">Em transição para uma nova posição</option></select></label>
+                    <label>Habilidade a desenvolver<select id="habilidade" name="habilidade" defaultValue="" required><option value="" disabled>O que você quer fortalecer?</option><option value="visao-negocios">Visão estratégica e negócios</option><option value="lideranca">Liderança e gestão de pessoas</option><option value="posicionamento">Posicionamento executivo e influência</option><option value="governanca">Governança de TI e operações</option><option value="transformacao">Transformação digital</option><option value="cloud-dados">Cloud, dados e IA aplicada</option></select></label>
+                    <label>Objetivo principal<select id="objetivo" name="objetivo" defaultValue="" required><option value="" disabled>Selecione uma opção</option><option value="promocao">Ser promovido a Gerente ou Head</option><option value="c-level">Preparar-me para CIO/CTO</option><option value="executivo">Fortalecer minha atuação executiva</option><option value="negocio">Conectar melhor tecnologia e negócio</option></select></label>
+                    <label>Desafio atual (opcional)<textarea id="desafio" name="desafio" rows={2} placeholder="Em uma frase, o que está travando seu próximo passo?" /></label>
                     <button className="button button-gold form-submit" type="submit">Agendar uma conversa <ArrowUpRight size={17} /></button>
-                    <small>Ao enviar, você concorda em ser contatado sobre esta solicitação.</small>
+                    <small>Ao clicar, o WhatsApp abrirá com suas informações organizadas para o Alexandre.</small>
                   </form>
                 </>
               )}

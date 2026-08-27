@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent, type PointerEvent } from 'react';
 import {
   Target, Diamond, Brain, GraduationCap, BarChart3, Globe, ArrowUpRight, Check, X,
 } from 'lucide-react';
@@ -61,9 +61,11 @@ function MetricCounter({ value, prefix = '', suffix = '' }: { value: number; pre
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState('');
   const [mobileMenu, setMobileMenu] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const navRef = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', company: '', service: '',
@@ -74,6 +76,9 @@ export default function LandingPage() {
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 60);
+      const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollProgress = scrollableHeight > 0 ? (window.scrollY / scrollableHeight) * 100 : 0;
+      document.documentElement.style.setProperty('--scroll-progress', `${scrollProgress}%`);
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       // Parallax: desloca os backgrounds com velocidade menor que o scroll
       document.querySelectorAll<HTMLElement>('.parallax-bg').forEach((el) => {
@@ -88,6 +93,23 @@ export default function LandingPage() {
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const sections = ['services', 'about', 'process', 'results', 'contact']
+      .map((id) => document.getElementById(id))
+      .filter((section): section is HTMLElement => Boolean(section));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible?.target instanceof HTMLElement) setActiveSection(visible.target.id);
+      },
+      { rootMargin: '-35% 0px -55% 0px', threshold: [0, 0.2, 0.5] },
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -186,6 +208,25 @@ export default function LandingPage() {
     setFormOpen(false);
   };
 
+  const handleHeroPointerMove = (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType === 'touch') return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.style.setProperty('--pointer-x', `${((event.clientX - rect.left) / rect.width) * 100}%`);
+    event.currentTarget.style.setProperty('--pointer-y', `${((event.clientY - rect.top) / rect.height) * 100}%`);
+    event.currentTarget.style.setProperty('--pointer-opacity', '1');
+  };
+
+  const handleHeroPointerLeave = (event: PointerEvent<HTMLElement>) => {
+    event.currentTarget.style.setProperty('--pointer-opacity', '0');
+  };
+
+  const handleCardPointerMove = (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType === 'touch') return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.style.setProperty('--card-x', `${((event.clientX - rect.left) / rect.width) * 100}%`);
+    event.currentTarget.style.setProperty('--card-y', `${((event.clientY - rect.top) / rect.height) * 100}%`);
+  };
+
   const scrollTo = (id: string) => {
     setMobileMenu(false);
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -194,16 +235,16 @@ export default function LandingPage() {
   return (
     <div className="landing">
       {/* Navbar */}
-      <nav className={`nav ${scrolled ? 'nav--scrolled' : ''}`}>
+      <nav ref={navRef} className={`nav ${scrolled ? 'nav--scrolled' : ''}`}>
         <div className="nav__inner">
           <a href="#" className="nav__brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img src="/logo.jpeg" alt="Vertex Consulting" className="nav__logo" />
             <span className="nav__wordmark">VERTEX</span>
           </a>
           <ul className="nav__links">
-            <li><button onClick={() => scrollTo('services')}>Serviços</button></li>
-            <li><button onClick={() => scrollTo('about')}>Sobre</button></li>
-            <li><button onClick={() => scrollTo('process')}>Processo</button></li>
+            <li><button className={`nav__link ${activeSection === 'services' ? 'nav__link--active' : ''}`} aria-current={activeSection === 'services' ? 'location' : undefined} onClick={() => scrollTo('services')}>Serviços</button></li>
+            <li><button className={`nav__link ${activeSection === 'about' ? 'nav__link--active' : ''}`} aria-current={activeSection === 'about' ? 'location' : undefined} onClick={() => scrollTo('about')}>Sobre</button></li>
+            <li><button className={`nav__link ${activeSection === 'process' ? 'nav__link--active' : ''}`} aria-current={activeSection === 'process' ? 'location' : undefined} onClick={() => scrollTo('process')}>Processo</button></li>
             <li><button onClick={openForm} className="nav__cta">Fale Conosco</button></li>
           </ul>
           <button
@@ -214,6 +255,7 @@ export default function LandingPage() {
             <span /><span /><span />
           </button>
         </div>
+        <div className="nav__progress" aria-hidden="true" />
       </nav>
 
       {/* Mobile overlay */}
@@ -232,9 +274,15 @@ export default function LandingPage() {
       )}
 
       {/* Hero */}
-      <section className="hero hero--photo">
+      <section
+        className="hero hero--photo"
+        onPointerMove={handleHeroPointerMove}
+        onPointerLeave={handleHeroPointerLeave}
+      >
         <div className="parallax-bg" style={{ backgroundImage: "url('/bg-hero.jpg')" }} />
         <div className="hero__grid" />
+        <div className="hero__pointer-glow" aria-hidden="true" />
+        <div className="hero__pointer-orbit" aria-hidden="true" />
         <div className="hero__orb hero__orb--1" />
         <div className="hero__orb hero__orb--2" />
         <div className="hero__orb hero__orb--3" />
@@ -285,7 +333,11 @@ export default function LandingPage() {
               { title: 'Resultados', desc: 'Acompanhamento de métricas reais: leads gerados, taxas de conversão e retorno sobre cada investimento.', icon: BarChart3 },
               { title: 'Presença Digital', desc: 'Sites, landing pages e sistemas web que convertem visitantes em clientes — não só páginas bonitas.', icon: Globe },
             ].map((s) => (
-              <div key={s.title} className="service-card anim">
+              <div
+                key={s.title}
+                className="service-card anim"
+                onPointerMove={handleCardPointerMove}
+              >
                 <div className="service-card__icon"><s.icon size={28} /></div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
@@ -372,7 +424,11 @@ export default function LandingPage() {
               { value: '-18%', label: 'Redução de custos operacionais.' },
               { value: '+67%', label: 'Crescimento de presença digital.' },
             ].map((result) => (
-              <article key={result.value} className="result-card anim">
+              <article
+                key={result.value}
+                className="result-card anim"
+                onPointerMove={handleCardPointerMove}
+              >
                 <strong>{result.value}</strong>
                 <p>{result.label}</p>
                 <ArrowUpRight aria-hidden="true" size={18} />

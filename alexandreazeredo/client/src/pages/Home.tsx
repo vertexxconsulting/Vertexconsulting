@@ -23,9 +23,9 @@ import {
 } from "lucide-react";
 
 const logoDarkSrc = "/manus-storage/alexandre-logo-dark_7b12d2cf.jpeg";
-const logoLightSrc = "/manus-storage/alexandre-logo-light_bcfd03cb.jpeg";
-const logoWhiteSrc = "/manus-storage/alexandre-logo-white-horizontal_724c29ed.png";
-const logoBlackSrc = "/manus-storage/alexandre-logo-black-horizontal_26c05346.png";
+const logoWhiteSrc = "/manus-storage/alexandre-wordmark-white-clean_48f65530.png";
+const logoBlackSrc = "/manus-storage/alexandre-wordmark-black-clean_80f23c91.png";
+const logoAboutMarkSrc = "/manus-storage/alexandre-logo-about-mark_1c1afdb9.png";
 const heroPhotoSrc = "/manus-storage/alexandre-hero_12802c54.jpeg";
 const aboutPhotoSrc = "/manus-storage/alexandre-about_2a1a5b55.jpeg";
 const authorityPhotoSrc = "/manus-storage/alexandre-authority_26bdd9f1.jpeg";
@@ -431,7 +431,7 @@ export default function Home() {
                 <div className="about-image-overlay">AA <span>Mentoria & Advisory</span></div>
               </div>
               <div className="about-secondary-photo"><img src={authorityPhotoSrc} alt="Alexandre Azeredo em ambiente corporativo" loading="lazy" /></div>
-              <div className="about-signature-card"><img src={logoLightSrc} alt="Logo Alexandre Azeredo" /></div>
+              <div className="about-signature-card"><img src={logoAboutMarkSrc} alt="Monograma dourado Alexandre Azeredo" /></div>
               <div className="about-side-note"><Sparkles size={15} aria-hidden="true" /> Sem atalhos. Com direção.</div>
             </div>
             <div className="about-copy" data-reveal style={{ transitionDelay: "120ms" }}>

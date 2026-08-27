@@ -949,6 +949,16 @@
   max-width: 320px;
   margin-bottom: 16px;
 }
+.form-modal__success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+.form-modal__success-actions .btn {
+  min-width: 180px;
+}
 
 /* ---- Inputs com ícone de plataforma ---- */
 .form-input-icon {

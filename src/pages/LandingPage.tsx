@@ -488,9 +488,21 @@ export default function LandingPage() {
                 <p>
                   Nossa equipe entrará em contato o mais breve possível.
                 </p>
-                <button className="btn btn--primary" onClick={closeForm}>
-                  Fechar
-                </button>
+                <div className="form-modal__success-actions">
+                  {boltenChatLink && (
+                    <a
+                      className="btn btn--primary"
+                      href={boltenChatLink}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Continuar pelo WhatsApp <WhatsAppIcon />
+                    </a>
+                  )}
+                  <button className="btn btn--secondary" onClick={closeForm}>
+                    Fechar
+                  </button>
+                </div>
               </div>
             ) : (
               <>

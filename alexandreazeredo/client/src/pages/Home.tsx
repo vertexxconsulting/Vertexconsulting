@@ -23,8 +23,6 @@ import {
 } from "lucide-react";
 
 const logoDarkSrc = "/manus-storage/alexandre-logo-dark_7b12d2cf.jpeg";
-const logoWhiteSrc = "/manus-storage/alexandre-wordmark-white-clean_48f65530.png";
-const logoBlackSrc = "/manus-storage/alexandre-wordmark-black-clean_80f23c91.png";
 const logoAboutMarkSrc = "/manus-storage/alexandre-logo-about-mark_1c1afdb9.png";
 const heroPhotoSrc = "/manus-storage/alexandre-hero_12802c54.jpeg";
 const aboutPhotoSrc = "/manus-storage/alexandre-about_2a1a5b55.jpeg";
@@ -252,8 +250,14 @@ export default function Home() {
     <div className="site-shell">
       <header className={`site-header ${scrolled ? "is-scrolled" : ""}`}>
         <div className="container header-inner">
-          <a className="brand brand-wordmark" href="#top" aria-label="Alexandre Azeredo — início">
-            <img src={scrolled ? logoBlackSrc : logoWhiteSrc} alt="Alexandre Azeredo — Mentor Executivo e CIO Advisor" className="wordmark-logo" />
+          <a className="brand" href="#top" aria-label="Alexandre Azeredo — início">
+            <span className="brand-logo-wrap">
+              <img src={logoDarkSrc} alt="Logo Alexandre Azeredo" className="brand-logo" />
+            </span>
+            <span className="brand-copy">
+              <strong>Alexandre Azeredo</strong>
+              <span>Mentor Executivo · CIO Advisor</span>
+            </span>
           </a>
 
           <nav className={`main-nav ${menuOpen ? "is-open" : ""}`} aria-label="Navegação principal">
@@ -513,7 +517,7 @@ export default function Home() {
 
       <footer className="site-footer">
         <div className="container footer-grid">
-          <div className="footer-brand"><a className="brand footer-logo" href="#top"><img src={logoWhiteSrc} alt="Alexandre Azeredo — Mentor Executivo e CIO Advisor" className="footer-wordmark-logo" /></a><p>Estratégia que posiciona.<br />Liderança que transforma.</p><div className="social-links"><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a><a href="https://www.instagram.com/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={17} /></a><a href="https://www.youtube.com/results?search_query=Papo+de+Valor+Alexandre+Azeredo" target="_blank" rel="noreferrer" aria-label="Podcast Papo de Valor"><Mic2 size={17} /></a></div></div>
+          <div className="footer-brand"><a className="brand footer-logo" href="#top"><span className="brand-logo-wrap"><img src={logoDarkSrc} alt="Logo Alexandre Azeredo" className="brand-logo" /></span><span className="brand-copy"><strong>Alexandre Azeredo</strong><span>Mentor Executivo · CIO Advisor</span></span></a><p>Estratégia que posiciona.<br />Liderança que transforma.</p><div className="social-links"><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a><a href="https://www.instagram.com/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={17} /></a><a href="https://www.youtube.com/results?search_query=Papo+de+Valor+Alexandre+Azeredo" target="_blank" rel="noreferrer" aria-label="Podcast Papo de Valor"><Mic2 size={17} /></a></div></div>
           <div className="footer-column"><p className="footer-label">Explorar</p><a href="#sobre">Sobre Alexandre</a><a href="#atuacao">Atuação</a><a href="#resultados">Resultados</a><a href="#faq">Perguntas frequentes</a></div>
           <div className="footer-column"><p className="footer-label">Contato</p><a href="mailto:contato@alexandreazeredo.com.br"><Mail size={15} /> contato@alexandreazeredo.com.br</a><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer"><Linkedin size={15} /> linkedin.com/in/alexandreazeredo</a></div>
         </div>

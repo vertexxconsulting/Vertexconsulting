@@ -453,3 +453,35 @@ h1 em, h2 em { color: var(--gold-light); font-style: italic; }
   .about-secondary-photo { width: 95px; height: 125px; }
   .about-signature-card { width: 116px; height: 53px; }
 }
+
+/* Card flutuante de prospecção e aplicações de logo por contraste */
+.brand-wordmark { width: 252px; }
+.wordmark-logo { display: block; width: 100%; height: auto; }
+.footer-logo { display: block; width: 255px; }
+.footer-wordmark-logo { display: block; width: 100%; height: auto; }
+.form-card { position: relative; z-index: 2; margin-top: -18px; border-radius: 4px; border-color: rgba(201, 169, 97, 0.82); background: var(--cream); color: var(--navy); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3), 0 5px 0 rgba(201, 169, 97, 0.18); }
+.form-heading { border-color: rgba(10, 31, 61, 0.16); }
+.form-heading p { color: var(--navy); }
+#cta-form { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 22px; row-gap: 14px; }
+#cta-form .form-field-wide, #cta-form .form-submit, #cta-form small { grid-column: 1 / -1; }
+#cta-form label { color: var(--slate); }
+#cta-form input, #cta-form select, #cta-form textarea { border-bottom-color: rgba(10, 31, 61, 0.22); color: var(--navy); }
+#cta-form input::placeholder, #cta-form textarea::placeholder { color: rgba(10, 31, 61, 0.42); }
+#cta-form select { color: var(--navy); }
+#cta-form select option { background: var(--cream); color: var(--navy); }
+#cta-form small { color: rgba(10, 31, 61, 0.53); }
+.success-state h3 { color: var(--navy); }
+.success-state > p:not(.mini-label) { color: var(--slate); }
+
+@media (max-width: 780px) {
+  .brand-wordmark { width: 190px; }
+  .footer-logo { width: 220px; }
+  .form-card { margin-top: 0; }
+  #cta-form { grid-template-columns: 1fr; }
+  #cta-form .form-field-wide, #cta-form .form-submit, #cta-form small { grid-column: auto; }
+}
+
+@media (max-width: 480px) {
+  .brand-wordmark { width: 178px; }
+  .footer-logo { width: 205px; }
+}

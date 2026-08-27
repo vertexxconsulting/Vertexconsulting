@@ -24,6 +24,8 @@ import {
 
 const logoDarkSrc = "/manus-storage/alexandre-logo-dark_7b12d2cf.jpeg";
 const logoLightSrc = "/manus-storage/alexandre-logo-light_bcfd03cb.jpeg";
+const logoWhiteSrc = "/manus-storage/alexandre-logo-white-horizontal_724c29ed.png";
+const logoBlackSrc = "/manus-storage/alexandre-logo-black-horizontal_26c05346.png";
 const heroPhotoSrc = "/manus-storage/alexandre-hero_12802c54.jpeg";
 const aboutPhotoSrc = "/manus-storage/alexandre-about_2a1a5b55.jpeg";
 const authorityPhotoSrc = "/manus-storage/alexandre-authority_26bdd9f1.jpeg";
@@ -250,14 +252,8 @@ export default function Home() {
     <div className="site-shell">
       <header className={`site-header ${scrolled ? "is-scrolled" : ""}`}>
         <div className="container header-inner">
-          <a className="brand" href="#top" aria-label="Alexandre Azeredo — início">
-            <span className="brand-logo-wrap">
-              <img src={logoDarkSrc} alt="Logo Alexandre Azeredo" className="brand-logo" />
-            </span>
-            <span className="brand-copy">
-              <strong>Alexandre Azeredo</strong>
-              <span>Mentor Executivo · CIO Advisor</span>
-            </span>
+          <a className="brand brand-wordmark" href="#top" aria-label="Alexandre Azeredo — início">
+            <img src={scrolled ? logoBlackSrc : logoWhiteSrc} alt="Alexandre Azeredo — Mentor Executivo e CIO Advisor" className="wordmark-logo" />
           </a>
 
           <nav className={`main-nav ${menuOpen ? "is-open" : ""}`} aria-label="Navegação principal">
@@ -481,7 +477,7 @@ export default function Home() {
                     <label>Seu momento<select id="momento" name="momento" defaultValue="" required><option value="" disabled>Selecione uma opção</option><option value="lider-tecnico">Líder técnico ou coordenador</option><option value="gerente-head">Gerente ou Head</option><option value="cio-cto">CIO ou CTO</option><option value="transicao">Em transição para uma nova posição</option></select></label>
                     <label>Habilidade a desenvolver<select id="habilidade" name="habilidade" defaultValue="" required><option value="" disabled>O que você quer fortalecer?</option><option value="visao-negocios">Visão estratégica e negócios</option><option value="lideranca">Liderança e gestão de pessoas</option><option value="posicionamento">Posicionamento executivo e influência</option><option value="governanca">Governança de TI e operações</option><option value="transformacao">Transformação digital</option><option value="cloud-dados">Cloud, dados e IA aplicada</option></select></label>
                     <label>Objetivo principal<select id="objetivo" name="objetivo" defaultValue="" required><option value="" disabled>Selecione uma opção</option><option value="promocao">Ser promovido a Gerente ou Head</option><option value="c-level">Preparar-me para CIO/CTO</option><option value="executivo">Fortalecer minha atuação executiva</option><option value="negocio">Conectar melhor tecnologia e negócio</option></select></label>
-                    <label>Desafio atual (opcional)<textarea id="desafio" name="desafio" rows={2} placeholder="Em uma frase, o que está travando seu próximo passo?" /></label>
+                    <label className="form-field-wide">Desafio atual (opcional)<textarea id="desafio" name="desafio" rows={2} placeholder="Em uma frase, o que está travando seu próximo passo?" /></label>
                     <button className="button button-gold form-submit" type="submit">Agendar uma conversa <ArrowUpRight size={17} /></button>
                     <small>Ao clicar, o WhatsApp abrirá com suas informações organizadas para o Alexandre.</small>
                   </form>
@@ -517,7 +513,7 @@ export default function Home() {
 
       <footer className="site-footer">
         <div className="container footer-grid">
-          <div className="footer-brand"><a className="brand footer-logo" href="#top"><span className="brand-logo-wrap"><img src={logoDarkSrc} alt="Logo Alexandre Azeredo" className="brand-logo" /></span><span className="brand-copy"><strong>Alexandre Azeredo</strong><span>Mentor Executivo · CIO Advisor</span></span></a><p>Estratégia que posiciona.<br />Liderança que transforma.</p><div className="social-links"><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a><a href="https://www.instagram.com/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={17} /></a><a href="https://www.youtube.com/results?search_query=Papo+de+Valor+Alexandre+Azeredo" target="_blank" rel="noreferrer" aria-label="Podcast Papo de Valor"><Mic2 size={17} /></a></div></div>
+          <div className="footer-brand"><a className="brand footer-logo" href="#top"><img src={logoWhiteSrc} alt="Alexandre Azeredo — Mentor Executivo e CIO Advisor" className="footer-wordmark-logo" /></a><p>Estratégia que posiciona.<br />Liderança que transforma.</p><div className="social-links"><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a><a href="https://www.instagram.com/alexandreazeredo" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={17} /></a><a href="https://www.youtube.com/results?search_query=Papo+de+Valor+Alexandre+Azeredo" target="_blank" rel="noreferrer" aria-label="Podcast Papo de Valor"><Mic2 size={17} /></a></div></div>
           <div className="footer-column"><p className="footer-label">Explorar</p><a href="#sobre">Sobre Alexandre</a><a href="#atuacao">Atuação</a><a href="#resultados">Resultados</a><a href="#faq">Perguntas frequentes</a></div>
           <div className="footer-column"><p className="footer-label">Contato</p><a href="mailto:contato@alexandreazeredo.com.br"><Mail size={15} /> contato@alexandreazeredo.com.br</a><a href="https://www.linkedin.com/in/alexandreazeredo" target="_blank" rel="noreferrer"><Linkedin size={15} /> linkedin.com/in/alexandreazeredo</a></div>
         </div>

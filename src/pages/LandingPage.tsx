@@ -169,6 +169,7 @@ export default function LandingPage() {
             <li><button onClick={() => scrollTo('services')}>Serviços</button></li>
             <li><button onClick={() => scrollTo('about')}>Sobre</button></li>
             <li><button onClick={() => scrollTo('process')}>Processo</button></li>
+            <li><button onClick={() => scrollTo('projetos')}>Projetos</button></li>
             <li><button onClick={openForm} className="nav__cta">Fale Conosco</button></li>
           </ul>
           <button
@@ -191,6 +192,7 @@ export default function LandingPage() {
             <button onClick={() => scrollTo('services')}>Serviços</button>
             <button onClick={() => scrollTo('about')}>Sobre</button>
             <button onClick={() => scrollTo('process')}>Processo</button>
+            <button onClick={() => scrollTo('projetos')}>Projetos</button>
             <button onClick={openForm}>Fale Conosco</button>
           </div>
         </div>
@@ -232,8 +234,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-
-
       {/* Services */}
       <section id="services" className="section section--photo">
         <div className="parallax-bg" style={{ backgroundImage: "url('/bg-services.jpg')" }} />
@@ -257,6 +257,34 @@ export default function LandingPage() {
                 <span className="service-card__cta">Saiba mais →</span>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Projetos Section */}
+      <section id="projetos" className="section section--projects">
+        <div className="container">
+          <div className="section-header anim fade-up">
+            <h2 className="section__title">Nossos Projetos</h2>
+            <p className="section__subtitle">Alguns dos sites e soluções que desenvolvemos com alta performance e design exclusivo.</p>
+          </div>
+
+          <div className="projects-grid">
+            <div className="project-card anim fade-up" style={{ animationDelay: '0.1s' }}>
+              <img src="/usebasemidia.webp" alt="Projeto Base Midia" loading="lazy" />
+              <div className="project-card__info">
+                <h3>Base Mídia</h3>
+                <p>Plataforma de presença digital</p>
+              </div>
+            </div>
+            
+            <div className="project-card anim fade-up" style={{ animationDelay: '0.2s' }}>
+              <img src="/resultgestaopro.webp" alt="Projeto Result Gestão Pro" loading="lazy" />
+              <div className="project-card__info">
+                <h3>Result Gestão Pro</h3>
+                <p>Sistema de gestão focado em resultados</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

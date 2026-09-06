@@ -821,7 +821,7 @@
   bottom: -25%;
   background-size: cover;
   background-position: center;
-  z-index: 9999;
+  z-index: 0;
   will-change: transform;
 }
 .section--photo::before {

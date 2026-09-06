@@ -34,6 +34,16 @@ export default function LandingPage() {
     has_site: '', instagram: '', message: '',
   });
 
+  const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 60);
@@ -139,7 +149,15 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="landing">
+    <div className="landing-page">
+      <div 
+        className="mouse-orb" 
+        style={{ 
+          left: mousePos.x, 
+          top: mousePos.y 
+        }} 
+      />
+      
       {/* Navbar */}
       <nav className={`nav ${scrolled ? 'nav--scrolled' : ''}`}>
         <div className="nav__inner">
@@ -548,7 +566,7 @@ export default function LandingPage() {
           </div>
           <div className="footer__col">
             <h4>Empresa</h4>
-            <ul>
+             <ul>
               <li><button onClick={() => scrollTo('about')}>Sobre Nós</button></li>
               <li><button onClick={() => scrollTo('process')}>Processo</button></li>
               <li><button onClick={openForm}>Contato</button></li>

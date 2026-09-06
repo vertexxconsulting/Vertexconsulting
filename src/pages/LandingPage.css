@@ -821,7 +821,7 @@
   bottom: -25%;
   background-size: cover;
   background-position: center;
-  z-index: 0;
+  z-index: 9999;
   will-change: transform;
 }
 .section--photo::before {
@@ -1005,4 +1005,17 @@
   .stats__inner { gap: 20px; }
   .stats__num { font-size: 1.8rem; }
   .form-modal { padding: 32px 20px 24px; }
+}
+
+.mouse-orb {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 168, 76, 0.15) 0%, transparent 60%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999;
+  filter: blur(25px);
+  transition: left 0.1s ease-out, top 0.1s ease-out;
 }

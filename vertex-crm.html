@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vertex CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --ink:#15130f; --ink-2:#1c1914; --card:#1e1b16; --card-border:#352c1f;
+    --gold:#c6992f; --gold-bright:#e7be5a; --gold-dim:#8a6c27;
+    --cream:#f2ede2; --muted:#a79c87; --track:#2a251d;
+    --danger:#c85c3c; --radius:8px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; height:100%;}
+  body{
+    background:var(--ink); color:var(--cream); font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:600; margin:0;}
+  button{font-family:inherit;}
+  .hidden{display:none !important;}
+  :focus-visible{outline:2px solid var(--gold-bright); outline-offset:2px;}
+
+  /* ---------- LOGIN ---------- */
+  #login-screen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .login-box{
+    width:100%; max-width:360px; background:var(--card); border:1px solid var(--card-border);
+    border-radius:var(--radius); padding:32px 28px;
+  }
+  .login-box .brand-name{font-size:14px; letter-spacing:0.02em; color:var(--muted); margin-bottom:22px;}
+  .login-box .brand-name span{color:var(--gold);}
+  .login-box h1{font-size:22px; margin-bottom:20px;}
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+  .field label{font-size:13px; color:var(--muted);}
+  input, select, textarea{
+    background:var(--ink-2); border:1px solid var(--card-border); color:var(--cream);
+    border-radius:var(--radius); padding:12px 14px; font-size:14.5px; font-family:'Inter',sans-serif; width:100%;
+  }
+  input:focus, select:focus, textarea:focus{outline:none; border-color:var(--gold);}
+  .btn{
+    appearance:none; border:none; cursor:pointer; font-weight:600; font-size:14.5px;
+    border-radius:var(--radius); padding:12px 18px; transition:background .15s ease, opacity .15s ease;
+  }
+  .btn-primary{background:var(--gold); color:#1a1508;}
+  .btn-primary:hover{background:var(--gold-bright);}
+  .btn-primary:disabled{opacity:0.5; cursor:not-allowed;}
+  .btn-block{width:100%;}
+  .btn-ghost{background:transparent; color:var(--muted); padding:8px 10px;}
+  .btn-ghost:hover{color:var(--cream);}
+  #login-error{color:var(--danger); font-size:13px; margin-top:10px; min-height:16px;}
+
+  /* ---------- APP SHELL ---------- */
+  #app-screen{display:none; min-height:100vh; flex-direction:column;}
+  #app-screen.active{display:flex;}
+  .topbar{
+    display:flex; align-items:center; gap:16px; padding:16px 24px;
+    border-bottom:1px solid var(--card-border); flex-wrap:wrap;
+  }
+  .topbar .brand-name{font-size:14px; color:var(--muted);}
+  .topbar .brand-name span{color:var(--gold);}
+  .topbar-spacer{flex:1;}
+  .icon-btn{
+    display:flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--card-border);
+    color:var(--cream); border-radius:var(--radius); padding:8px 14px; font-size:13.5px; cursor:pointer;
+  }
+  .icon-btn:hover{border-color:var(--gold-dim);}
+  .badge-count{
+    background:var(--gold); color:#1a1508; border-radius:100px; font-size:11px; font-weight:700;
+    padding:1px 7px; margin-left:2px;
+  }
+
+  /* ---------- KANBAN ---------- */
+  #board{
+    flex:1; overflow-x:auto; display:flex; gap:16px; padding:20px 24px;
+    align-items:flex-start;
+  }
+  .column{
+    background:var(--ink-2); border:1px solid var(--card-border); border-radius:var(--radius);
+    min-width:260px; max-width:260px; display:flex; flex-direction:column; max-height:calc(100vh - 100px);
+  }
+  .column-head{
+    padding:14px 14px 10px; font-size:13px; color:var(--cream); display:flex; justify-content:space-between;
+    border-bottom:1px solid var(--card-border);
+  }
+  .column-head .count{color:var(--muted);}
+  .column-body{padding:10px; display:flex; flex-direction:column; gap:8px; overflow-y:auto;}
+  .lead-card{
+    background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius);
+    padding:12px; cursor:pointer; transition:border-color .15s ease;
+  }
+  .lead-card:hover{border-color:var(--gold-dim);}
+  .lead-card .lc-name{font-size:14px; font-weight:600; margin-bottom:4px;}
+  .lead-card .lc-meta{font-size:12px; color:var(--muted); display:flex; justify-content:space-between; gap:8px;}
+  .score-pill{
+    display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:100px;
+    border:1px solid var(--gold-dim); color:var(--gold-bright);
+  }
+  .score-pill.hot{background:var(--gold); color:#1a1508; border-color:var(--gold);}
+
+  /* ---------- MODAL BASE ---------- */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(10,9,7,0.6); align-items:flex-start;
+    justify-content:center; padding:40px 16px; overflow-y:auto; z-index:50;
+  }
+  .modal-overlay.active{display:flex;}
+  .modal{
+    background:var(--ink-2); border:1px solid var(--card-border); border-radius:var(--radius);
+    width:100%; max-width:520px; padding:26px 24px;
+  }
+  .modal-head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap:10px;}
+  .modal-head h2{font-size:20px;}
+  .close-x{background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; line-height:1;}
+  .close-x:hover{color:var(--cream);}
+
+  /* ---------- LEAD DETAIL ---------- */
+  .lead-contact{font-size:13px; color:var(--muted); margin-bottom:16px;}
+  .lead-contact a{color:var(--gold-bright); text-decoration:none;}
+  .pillar-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px;}
+  .pillar-mini{background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius); padding:10px 12px;}
+  .pillar-mini .pm-label{font-size:11px; color:var(--muted); margin-bottom:4px;}
+  .pillar-mini .pm-val{font-family:'Fraunces',serif; font-size:20px; color:var(--gold-bright);}
+  .section-label{font-size:12px; color:var(--muted); margin:18px 0 8px; text-transform:none;}
+  select#stage-select{margin-bottom:6px;}
+  .timeline{display:flex; flex-direction:column; gap:10px; max-height:220px; overflow-y:auto; margin-bottom:14px;}
+  .tl-item{font-size:13px; border-left:2px solid var(--card-border); padding-left:10px;}
+  .tl-item .tl-date{color:var(--muted); font-size:11px; display:block; margin-bottom:2px;}
+  #note-form{display:flex; gap:8px;}
+  #note-form input{flex:1;}
+  #note-form button{white-space:nowrap;}
+
+  /* ---------- TASKS MODAL ---------- */
+  .task-row{
+    display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--card-border);
+    font-size:13.5px;
+  }
+  .task-row:last-child{border-bottom:none;}
+  .task-row .t-title{flex:1;}
+  .task-row .t-due{color:var(--muted); font-size:12px; white-space:nowrap;}
+  .task-row input[type="checkbox"]{width:16px; height:16px; accent-color:var(--gold);}
+  .tag-auto{font-size:10px; color:var(--gold-bright); border:1px solid var(--gold-dim); border-radius:100px; padding:1px 6px; margin-left:6px;}
+
+  /* ---------- SETTINGS ---------- */
+  #settings-form .field{margin-bottom:14px;}
+  #settings-saved{color:var(--gold-bright); font-size:13px; display:none;}
+
+  /* ---------- NEW LEAD ---------- */
+  #new-lead-form .field{margin-bottom:12px;}
+
+  /* ---------- VIEW TABS ---------- */
+  .view-tabs{display:flex; gap:4px; background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius); padding:3px;}
+  .view-tab{background:transparent; border:none; color:var(--muted); font-size:13px; font-weight:600; padding:6px 14px; border-radius:6px; cursor:pointer;}
+  .view-tab.active{background:var(--gold); color:#1a1508;}
+
+  /* ---------- DASHBOARD ---------- */
+  #view-dashboard{flex:1; overflow-y:auto; padding:24px;}
+  .kpi-row{display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:14px; margin-bottom:28px;}
+  .kpi-card{background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius); padding:16px 18px;}
+  .kpi-card .kpi-label{font-size:12px; color:var(--muted); margin-bottom:6px;}
+  .kpi-card .kpi-val{font-family:'Fraunces',serif; font-size:26px; color:var(--gold-bright);}
+  .funnel-wrap{background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius); padding:22px 20px; margin-bottom:20px;}
+  .funnel-wrap h3{font-size:16px; margin-bottom:16px;}
+  .funnel-row{display:flex; align-items:center; gap:14px; margin-bottom:12px;}
+  .funnel-row:last-child{margin-bottom:0;}
+  .funnel-label{width:150px; flex-shrink:0; font-size:13px;}
+  .funnel-track{flex:1; height:22px; background:var(--track); border-radius:5px; overflow:hidden; position:relative;}
+  .funnel-fill{height:100%; background:linear-gradient(90deg, var(--gold-dim), var(--gold)); border-radius:5px; width:0%; transition:width .6s ease;}
+  .funnel-count{width:90px; text-align:right; font-size:13px; color:var(--muted); flex-shrink:0;}
+
+  /* ---------- PRODUCTS MODAL ---------- */
+  .product-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--card-border); font-size:13.5px;}
+  .product-row:last-child{border-bottom:none;}
+  .product-row .p-name{flex:1;}
+  .product-row .p-price{color:var(--gold-bright); font-weight:600; white-space:nowrap;}
+  .product-row .p-actions{display:flex; gap:6px;}
+  .product-row .p-actions button{background:none; border:none; color:var(--muted); cursor:pointer; font-size:12.5px;}
+  .product-row .p-actions button:hover{color:var(--cream);}
+  #product-form{display:flex; gap:8px; margin-top:14px;}
+  #product-form input[name="p-name"]{flex:1;}
+  #product-form input[name="p-price"]{width:110px;}
+
+  /* ---------- LEAD EDIT ---------- */
+  .lead-edit-grid{display:flex; flex-direction:column; gap:10px; margin-bottom:16px;}
+  .danger-zone{margin-top:22px; padding-top:16px; border-top:1px solid var(--card-border);}
+  .btn-danger{background:transparent; border:1px solid var(--danger); color:var(--danger); padding:9px 14px; font-size:13px;}
+  .btn-danger:hover{background:var(--danger); color:var(--cream);}
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="brand-name">VERTEX <span>CRM</span></div>
+    <h1>Entrar</h1>
+    <form id="login-form">
+      <div class="field">
+        <label for="login-email">E-mail</label>
+        <input id="login-email" type="email" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="login-pass">Senha</label>
+        <input id="login-pass" type="password" required autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Entrar</button>
+      <div id="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="app-screen">
+  <div class="topbar">
+    <div class="brand-name">VERTEX <span>CRM</span></div>
+    <div class="view-tabs">
+      <button class="view-tab active" id="tab-kanban">Kanban</button>
+      <button class="view-tab" id="tab-dashboard">Dashboard</button>
+    </div>
+    <div class="topbar-spacer"></div>
+    <button class="icon-btn" id="btn-new-lead">+ Novo lead</button>
+    <button class="icon-btn" id="btn-products">Produtos</button>
+    <button class="icon-btn" id="btn-tasks">Tarefas <span class="badge-count" id="task-count">0</span></button>
+    <button class="icon-btn" id="btn-settings">Configurações</button>
+    <button class="icon-btn" id="btn-logout">Sair</button>
+  </div>
+
+  <div id="board"></div>
+
+  <div id="view-dashboard" class="hidden">
+    <div class="kpi-row" id="kpi-row"></div>
+    <div class="funnel-wrap">
+      <h3>Funil de conversão</h3>
+      <div id="funnel-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: LEAD DETAIL ===================== -->
+<div class="modal-overlay" id="modal-lead">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="ld-name">—</h2>
+        <div class="lead-contact" id="ld-contact"></div>
+      </div>
+      <button class="close-x" data-close="modal-lead">×</button>
+    </div>
+
+    <div class="pillar-grid" id="ld-pillars"></div>
+
+    <div class="section-label">Dados de contato</div>
+    <div class="lead-edit-grid">
+      <input id="ld-edit-name" type="text" placeholder="Nome">
+      <input id="ld-edit-whats" type="text" placeholder="WhatsApp">
+      <input id="ld-edit-email" type="email" placeholder="E-mail">
+      <button class="btn btn-primary" id="btn-save-contact">Salvar dados de contato</button>
+    </div>
+
+    <div class="section-label">Estágio</div>
+    <select id="stage-select"></select>
+
+    <div class="section-label">Produto/serviço do catálogo</div>
+    <select id="ld-product-select">
+      <option value="">Selecionar produto…</option>
+    </select>
+
+    <div class="section-label">Valor estimado do contrato (R$)</div>
+    <input id="ld-deal-value" type="number" min="0" step="100" placeholder="0">
+
+    <div class="section-label">Linha do tempo</div>
+    <div class="timeline" id="ld-timeline"></div>
+
+    <form id="note-form">
+      <input id="note-input" type="text" placeholder="Adicionar nota ou registrar contato…">
+      <button class="btn btn-primary" type="submit">Salvar</button>
+    </form>
+
+    <div class="danger-zone">
+      <button class="btn btn-danger" id="btn-delete-lead">Excluir lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: PRODUTOS ===================== -->
+<div class="modal-overlay" id="modal-products">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Catálogo de produtos/serviços</h2>
+      <button class="close-x" data-close="modal-products">×</button>
+    </div>
+    <div id="products-list"></div>
+    <form id="product-form">
+      <input type="text" name="p-name" placeholder="Nome do produto/serviço" required>
+      <input type="number" name="p-price" placeholder="Preço" min="0" step="10" required>
+      <button class="btn btn-primary" type="submit" id="product-form-submit">Adicionar</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== MODAL: TASKS ===================== -->
+<div class="modal-overlay" id="modal-tasks">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Tarefas pendentes</h2>
+      <button class="close-x" data-close="modal-tasks">×</button>
+    </div>
+    <div id="tasks-list"></div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: SETTINGS ===================== -->
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Configurações de automação</h2>
+      <button class="close-x" data-close="modal-settings">×</button>
+    </div>
+    <form id="settings-form">
+      <div class="field">
+        <label for="set-threshold">A partir de qual score um lead é "quente"? (0–100)</label>
+        <input id="set-threshold" type="number" min="0" max="100">
+      </div>
+      <div class="field">
+        <label for="set-stale">Dias sem contato até virar "lead frio"</label>
+        <input id="set-stale" type="number" min="1">
+      </div>
+      <div class="field">
+        <label for="set-webhook-notify">Webhook para notificar lead quente (Zapier/Make/WhatsApp API) — opcional</label>
+        <input id="set-webhook-notify" type="url" placeholder="https://hooks.zapier.com/...">
+      </div>
+      <div class="field">
+        <label for="set-webhook-report">Webhook do relatório semanal — opcional</label>
+        <input id="set-webhook-report" type="url" placeholder="https://hooks.zapier.com/...">
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Salvar configurações</button>
+      <div id="settings-saved">Salvo.</div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== MODAL: NEW LEAD ===================== -->
+<div class="modal-overlay" id="modal-new-lead">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Novo lead manual</h2>
+      <button class="close-x" data-close="modal-new-lead">×</button>
+    </div>
+    <form id="new-lead-form">
+      <div class="field"><label>Nome</label><input id="nl-name" required></div>
+      <div class="field"><label>WhatsApp</label><input id="nl-whats" required></div>
+      <div class="field"><label>E-mail</label><input id="nl-email" type="email"></div>
+      <div class="field"><label>Origem</label>
+        <select id="nl-source">
+          <option value="indicacao">Indicação</option>
+          <option value="anuncio">Anúncio</option>
+          <option value="organico">Orgânico / redes sociais</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Adicionar lead</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  const SUPABASE_URL = "https://wuxylvutyibfqdphjaex.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1eHlsdnV0eWliZnFkcGhqYWV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NTEwOTMsImV4cCI6MjEwNDIyNzA5M30.y800sR6cKG6HwGS9xuluq-mnWqsCUn03T7PE12gkqIc";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let stages = [];
+  let leads = [];
+  let products = [];
+  let currentLeadId = null;
+  let editingProductId = null;
+
+  // ---------- VIEW TABS ----------
+  document.getElementById('tab-kanban').addEventListener('click', ()=> switchView('kanban'));
+  document.getElementById('tab-dashboard').addEventListener('click', ()=> switchView('dashboard'));
+  function switchView(view){
+    document.getElementById('board').classList.toggle('hidden', view!=='kanban');
+    document.getElementById('view-dashboard').classList.toggle('hidden', view!=='dashboard');
+    document.getElementById('tab-kanban').classList.toggle('active', view==='kanban');
+    document.getElementById('tab-dashboard').classList.toggle('active', view==='dashboard');
+    if(view==='dashboard') renderDashboard();
+  }
+
+  // ---------- AUTH ----------
+  sb.auth.onAuthStateChange((event, session) => {
+    if(session){
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-screen').classList.add('active');
+      boot();
+    } else {
+      document.getElementById('app-screen').classList.remove('active');
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+  });
+
+  document.getElementById('login-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-pass').value;
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = '';
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if(error) errEl.textContent = 'E-mail ou senha inválidos.';
+  });
+
+  document.getElementById('btn-logout').addEventListener('click', ()=> sb.auth.signOut());
+
+  // ---------- MODALS (open/close genérico) ----------
+  document.querySelectorAll('[data-close]').forEach(btn=>{
+    btn.addEventListener('click', ()=> closeModal(btn.dataset.close));
+  });
+  function openModal(id){ document.getElementById(id).classList.add('active'); }
+  function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+
+  // ---------- BOOT ----------
+  async function boot(){
+    await loadStages();
+    await Promise.all([loadLeads(), loadTaskCount(), loadProducts()]);
+    renderBoard();
+  }
+
+  async function loadProducts(){
+    const { data } = await sb.from('products').select('*').eq('active', true).order('name');
+    products = data || [];
+    const sel = document.getElementById('ld-product-select');
+    sel.innerHTML = '<option value="">Selecionar produto…</option>' +
+      products.map(p=>`<option value="${p.id}">${escapeHtml(p.name)} — R$ ${Number(p.price).toLocaleString('pt-BR')}</option>`).join('');
+  }
+
+  async function loadStages(){
+    const { data } = await sb.from('pipeline_stages').select('*').order('position');
+    stages = data || [];
+    const sel = document.getElementById('stage-select');
+    sel.innerHTML = stages.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  }
+
+  async function loadLeads(){
+    const { data } = await sb.from('leads').select('*').order('created_at', { ascending:false });
+    leads = data || [];
+  }
+
+  async function loadTaskCount(){
+    const { count } = await sb.from('tasks').select('id', { count:'exact', head:true }).eq('status','pendente');
+    document.getElementById('task-count').textContent = count ?? 0;
+  }
+
+  // ---------- BOARD ----------
+  function renderBoard(){
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+    stages.forEach(stage=>{
+      const col = document.createElement('div');
+      col.className = 'column';
+      const colLeads = leads.filter(l=>l.stage_id === stage.id);
+      col.innerHTML = `
+        <div class="column-head"><span>${stage.name}</span><span class="count">${colLeads.length}</span></div>
+        <div class="column-body" id="col-${stage.id}"></div>
+      `;
+      board.appendChild(col);
+      const body = col.querySelector('.column-body');
+      colLeads.forEach(l=>{
+        const card = document.createElement('div');
+        card.className = 'lead-card';
+        const days = Math.floor((Date.now() - new Date(l.last_activity_at)) / 86400000);
+        const hot = l.score_overall !== null && l.score_overall >= 70;
+        card.innerHTML = `
+          <div class="lc-name">${escapeHtml(l.name)}</div>
+          <div class="lc-meta">
+            <span class="score-pill ${hot?'hot':''}">${l.score_overall ?? '—'}/100</span>
+            <span>${days===0 ? 'hoje' : days+'d atrás'}</span>
+          </div>
+        `;
+        card.addEventListener('click', ()=> openLead(l.id));
+        body.appendChild(card);
+      });
+    });
+  }
+
+  function escapeHtml(s){
+    return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- LEAD DETAIL ----------
+  async function openLead(id){
+    currentLeadId = id;
+    const lead = leads.find(l=>l.id===id);
+    if(!lead) return;
+
+    document.getElementById('ld-name').textContent = lead.name;
+    document.getElementById('ld-contact').innerHTML =
+      `<a href="https://wa.me/${(lead.whatsapp||'').replace(/\D/g,'')}" target="_blank">WhatsApp</a>` +
+      (lead.email ? ` · ${escapeHtml(lead.email)}` : '') +
+      ` · origem: ${escapeHtml(lead.source)}`;
+
+    const pillars = [
+      ['Posicionamento', lead.score_posicionamento],
+      ['Marketing', lead.score_marketing],
+      ['IA', lead.score_ia],
+      ['Gestão', lead.score_gestao],
+      ['Vendas', lead.score_vendas],
+    ];
+    document.getElementById('ld-pillars').innerHTML = pillars.map(([label,val])=>`
+      <div class="pillar-mini"><div class="pm-label">${label}</div><div class="pm-val">${val ?? '—'}</div></div>
+    `).join('') + (lead.business_stage ? `<div class="pillar-mini"><div class="pm-label">Fase</div><div class="pm-val" style="font-size:14px;">${escapeHtml(lead.business_stage)}</div></div>` : '');
+
+    document.getElementById('ld-edit-name').value = lead.name || '';
+    document.getElementById('ld-edit-whats').value = lead.whatsapp || '';
+    document.getElementById('ld-edit-email').value = lead.email || '';
+
+    document.getElementById('stage-select').value = lead.stage_id;
+    document.getElementById('ld-product-select').value = '';
+    document.getElementById('ld-deal-value').value = lead.deal_value || '';
+
+    await loadTimeline(id);
+    openModal('modal-lead');
+  }
+
+  async function loadTimeline(leadId){
+    const { data } = await sb.from('activities').select('*').eq('lead_id', leadId).order('created_at', { ascending:false });
+    const wrap = document.getElementById('ld-timeline');
+    wrap.innerHTML = (data||[]).map(a=>`
+      <div class="tl-item">
+        <span class="tl-date">${new Date(a.created_at).toLocaleString('pt-BR')} · ${a.type}</span>
+        ${escapeHtml(a.description)}
+      </div>
+    `).join('') || '<div class="tl-item">Sem atividades ainda.</div>';
+  }
+
+  document.getElementById('stage-select').addEventListener('change', async (e)=>{
+    if(!currentLeadId) return;
+    await sb.from('leads').update({ stage_id: e.target.value }).eq('id', currentLeadId);
+    await Promise.all([loadLeads(), loadTimeline(currentLeadId)]);
+    renderBoard();
+  });
+
+  document.getElementById('ld-deal-value').addEventListener('change', async (e)=>{
+    if(!currentLeadId) return;
+    await sb.from('leads').update({ deal_value: e.target.value || null }).eq('id', currentLeadId);
+    await loadLeads();
+  });
+
+  document.getElementById('btn-save-contact').addEventListener('click', async ()=>{
+    if(!currentLeadId) return;
+    const name = document.getElementById('ld-edit-name').value.trim();
+    const whats = document.getElementById('ld-edit-whats').value.trim();
+    const email = document.getElementById('ld-edit-email').value.trim();
+    if(!name || !whats) return;
+    await sb.from('leads').update({ name, whatsapp: whats, email: email || null }).eq('id', currentLeadId);
+    await loadLeads();
+    renderBoard();
+    const lead = leads.find(l=>l.id===currentLeadId);
+    if(lead){
+      document.getElementById('ld-name').textContent = lead.name;
+      document.getElementById('ld-contact').innerHTML =
+        `<a href="https://wa.me/${(lead.whatsapp||'').replace(/\D/g,'')}" target="_blank">WhatsApp</a>` +
+        (lead.email ? ` · ${escapeHtml(lead.email)}` : '') +
+        ` · origem: ${escapeHtml(lead.source)}`;
+    }
+  });
+
+  document.getElementById('ld-product-select').addEventListener('change', (e)=>{
+    const product = products.find(p=>p.id===e.target.value);
+    if(product) document.getElementById('ld-deal-value').value = product.price;
+  });
+
+  document.getElementById('btn-delete-lead').addEventListener('click', async ()=>{
+    if(!currentLeadId) return;
+    if(!confirm('Excluir este lead? Essa ação não pode ser desfeita.')) return;
+    await sb.from('leads').delete().eq('id', currentLeadId);
+    closeModal('modal-lead');
+    await loadLeads();
+    renderBoard();
+  });
+
+  document.getElementById('note-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const input = document.getElementById('note-input');
+    const text = input.value.trim();
+    if(!text || !currentLeadId) return;
+    await sb.from('activities').insert({ lead_id: currentLeadId, type:'nota', description:text });
+    await sb.from('leads').update({ last_activity_at: new Date().toISOString() }).eq('id', currentLeadId);
+    input.value = '';
+    await Promise.all([loadLeads(), loadTimeline(currentLeadId)]);
+  });
+
+  // ---------- NEW LEAD ----------
+  document.getElementById('btn-new-lead').addEventListener('click', ()=> openModal('modal-new-lead'));
+  document.getElementById('new-lead-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const novoLeadStage = stages.find(s=>s.key==='novo_lead');
+    await sb.from('leads').insert({
+      name: document.getElementById('nl-name').value.trim(),
+      whatsapp: document.getElementById('nl-whats').value.trim(),
+      email: document.getElementById('nl-email').value.trim() || null,
+      source: document.getElementById('nl-source').value,
+      stage_id: novoLeadStage ? novoLeadStage.id : undefined
+    });
+    e.target.reset();
+    closeModal('modal-new-lead');
+    await loadLeads();
+    renderBoard();
+  });
+
+  // ---------- TASKS ----------
+  document.getElementById('btn-tasks').addEventListener('click', async ()=>{
+    const { data } = await sb.from('tasks').select('*, leads(name)').eq('status','pendente').order('due_date');
+    const list = document.getElementById('tasks-list');
+    list.innerHTML = (data||[]).map(t=>`
+      <div class="task-row" data-id="${t.id}">
+        <input type="checkbox">
+        <span class="t-title">${escapeHtml(t.leads?.name || '')} — ${escapeHtml(t.title)} ${t.auto_generated?'<span class="tag-auto">auto</span>':''}</span>
+        <span class="t-due">${new Date(t.due_date).toLocaleDateString('pt-BR')}</span>
+      </div>
+    `).join('') || '<div class="task-row">Nenhuma tarefa pendente.</div>';
+
+    list.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+      cb.addEventListener('change', async (e)=>{
+        const row = e.target.closest('.task-row');
+        await sb.from('tasks').update({ status:'concluida' }).eq('id', row.dataset.id);
+        row.remove();
+        loadTaskCount();
+      });
+    });
+
+    openModal('modal-tasks');
+  });
+
+  // ---------- PRODUTOS ----------
+  document.getElementById('btn-products').addEventListener('click', ()=>{
+    renderProductsList();
+    openModal('modal-products');
+  });
+
+  function renderProductsList(){
+    const list = document.getElementById('products-list');
+    list.innerHTML = products.map(p=>`
+      <div class="product-row" data-id="${p.id}">
+        <span class="p-name">${escapeHtml(p.name)}</span>
+        <span class="p-price">R$ ${Number(p.price).toLocaleString('pt-BR')}</span>
+        <span class="p-actions">
+          <button type="button" class="edit-product">editar</button>
+          <button type="button" class="remove-product">remover</button>
+        </span>
+      </div>
+    `).join('') || '<div class="product-row">Nenhum produto cadastrado ainda.</div>';
+
+    list.querySelectorAll('.edit-product').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        const id = e.target.closest('.product-row').dataset.id;
+        const p = products.find(x=>x.id===id);
+        if(!p) return;
+        editingProductId = id;
+        const form = document.getElementById('product-form');
+        form.elements['p-name'].value = p.name;
+        form.elements['p-price'].value = p.price;
+        document.getElementById('product-form-submit').textContent = 'Salvar edição';
+      });
+    });
+    list.querySelectorAll('.remove-product').forEach(btn=>{
+      btn.addEventListener('click', async (e)=>{
+        const id = e.target.closest('.product-row').dataset.id;
+        if(!confirm('Remover este produto do catálogo?')) return;
+        await sb.from('products').update({ active:false }).eq('id', id);
+        await loadProducts();
+        renderProductsList();
+      });
+    });
+  }
+
+  document.getElementById('product-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const form = e.target;
+    const name = form.elements['p-name'].value.trim();
+    const price = Number(form.elements['p-price'].value);
+    if(!name) return;
+
+    if(editingProductId){
+      await sb.from('products').update({ name, price }).eq('id', editingProductId);
+      editingProductId = null;
+      document.getElementById('product-form-submit').textContent = 'Adicionar';
+    } else {
+      await sb.from('products').insert({ name, price });
+    }
+    form.reset();
+    await loadProducts();
+    renderProductsList();
+  });
+
+  // ---------- DASHBOARD ----------
+  function renderDashboard(){
+    const total = leads.length;
+    const ganhoStage = stages.find(s=>s.key==='fechado_ganho');
+    const perdidoStage = stages.find(s=>s.key==='fechado_perdido');
+    const ganhos = leads.filter(l=>l.stage_id===ganhoStage?.id);
+    const abertos = leads.filter(l=>l.stage_id!==ganhoStage?.id && l.stage_id!==perdidoStage?.id);
+
+    const taxaConversao = total ? Math.round((ganhos.length/total)*100) : 0;
+    const valorEmNegociacao = abertos.reduce((sum,l)=>sum+(Number(l.deal_value)||0),0);
+    const ticketMedio = ganhos.length ? ganhos.reduce((sum,l)=>sum+(Number(l.deal_value)||0),0)/ganhos.length : 0;
+
+    document.getElementById('kpi-row').innerHTML = `
+      <div class="kpi-card"><div class="kpi-label">Total de leads</div><div class="kpi-val">${total}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Taxa de conversão</div><div class="kpi-val">${taxaConversao}%</div></div>
+      <div class="kpi-card"><div class="kpi-label">Em negociação</div><div class="kpi-val">R$ ${valorEmNegociacao.toLocaleString('pt-BR')}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Ticket médio (ganho)</div><div class="kpi-val">R$ ${Math.round(ticketMedio).toLocaleString('pt-BR')}</div></div>
+    `;
+
+    const maxCount = Math.max(1, ...stages.map(s=>leads.filter(l=>l.stage_id===s.id).length));
+    document.getElementById('funnel-body').innerHTML = stages.map(s=>{
+      const count = leads.filter(l=>l.stage_id===s.id).length;
+      const pct = Math.round((count/maxCount)*100);
+      return `
+        <div class="funnel-row">
+          <div class="funnel-label">${s.name}</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:${pct}%"></div></div>
+          <div class="funnel-count">${count} · ${total ? Math.round((count/total)*100) : 0}%</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ---------- SETTINGS ----------
+  document.getElementById('btn-settings').addEventListener('click', async ()=>{
+    const { data } = await sb.from('automation_settings').select('*').eq('id',1).single();
+    if(data){
+      document.getElementById('set-threshold').value = data.hot_score_threshold;
+      document.getElementById('set-stale').value = data.stale_days;
+      document.getElementById('set-webhook-notify').value = data.notify_webhook_url || '';
+      document.getElementById('set-webhook-report').value = data.weekly_report_webhook_url || '';
+    }
+    openModal('modal-settings');
+  });
+
+  document.getElementById('settings-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    await sb.from('automation_settings').update({
+      hot_score_threshold: Number(document.getElementById('set-threshold').value),
+      stale_days: Number(document.getElementById('set-stale').value),
+      notify_webhook_url: document.getElementById('set-webhook-notify').value || null,
+      weekly_report_webhook_url: document.getElementById('set-webhook-report').value || null
+    }).eq('id',1);
+    const saved = document.getElementById('settings-saved');
+    saved.style.display = 'block';
+    setTimeout(()=> saved.style.display='none', 2000);
+  });
+
+})();
+</script>
+</body>
+</html>

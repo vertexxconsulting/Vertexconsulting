@@ -1,0 +1,415 @@
+:root {
+  --ink: #15130f;
+  --ink-2: #1c1914;
+  --card: #1e1b16;
+  --card-border: #352c1f;
+  --gold: #c6992f;
+  --gold-bright: #e7be5a;
+  --gold-dim: #8a6c27;
+  --cream: #f2ede2;
+  --muted: #a79c87;
+  --danger-track: #2a251d;
+  --radius: 8px;
+  --maxw: 640px;
+}
+.diagnostico-page {
+  background: linear-gradient(rgba(21,19,15,.95), rgba(21,19,15,.96)), url('/bg-process.jpg') center/cover fixed;
+  color: var(--cream);
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  -webkit-font-smoothing: antialiased;
+}
+.diagnostico-page * {
+  box-sizing: border-box;
+}
+.diagnostico-page #app {
+  width: 100%;
+  max-width: var(--maxw);
+  padding: 32px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.diagnostico-page .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+.diagnostico-page .brand-mark {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+.diagnostico-page .brand-name {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-size: 15px;
+  color: var(--cream);
+}
+.diagnostico-page .brand-name span {
+  color: var(--gold);
+}
+.diagnostico-page .screen {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+}
+.diagnostico-page .screen.active {
+  display: flex;
+}
+.diagnostico-page #screen-intro h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: clamp(28px, 6vw, 40px);
+  line-height: 1.15;
+  margin: 0 0 18px;
+  max-width: 11ch;
+}
+.diagnostico-page #screen-intro p.lead {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 46ch;
+  margin: 0 0 32px;
+}
+.diagnostico-page .feature-list {
+  list-style: none;
+  margin: 0 0 40px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.diagnostico-page .feature-list li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--cream);
+}
+.diagnostico-page .feature-list .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+.diagnostico-page .meta-line {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 16px;
+}
+.diagnostico-page .btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: var(--radius);
+  padding: 16px 24px;
+  transition: transform .15s ease, background .15s ease, opacity .15s ease;
+}
+.diagnostico-page .btn:active {
+  transform: scale(0.98);
+}
+.diagnostico-page .btn-primary {
+  background: var(--gold);
+  color: #1a1508;
+}
+.diagnostico-page .btn-primary:hover {
+  background: var(--gold-bright);
+}
+.diagnostico-page .btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.diagnostico-page .btn-block {
+  width: 100%;
+}
+.diagnostico-page .btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  padding: 10px 0;
+  font-weight: 500;
+  font-size: 14px;
+}
+.diagnostico-page .btn-ghost:hover {
+  color: var(--cream);
+}
+.diagnostico-page .progress-track {
+  width: 100%;
+  height: 3px;
+  background: var(--danger-track);
+  border-radius: 2px;
+  margin-bottom: 36px;
+  overflow: hidden;
+}
+.diagnostico-page .progress-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+  width: 0%;
+  transition: width .35s ease;
+}
+.diagnostico-page .pillar-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+.diagnostico-page .pillar-tag .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+.diagnostico-page #question-count {
+  color: var(--muted);
+  margin-left: auto;
+  font-size: 13px;
+}
+.diagnostico-page .question-text {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: clamp(22px, 4.5vw, 28px);
+  line-height: 1.3;
+  margin: 0 0 28px;
+}
+.diagnostico-page .options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.diagnostico-page .option {
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--cream);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.diagnostico-page .option:hover {
+  border-color: var(--gold-dim);
+}
+.diagnostico-page .option.selected {
+  border-color: var(--gold);
+  background: #26200f;
+}
+.diagnostico-page #quiz-back {
+  align-self: flex-start;
+}
+.diagnostico-page #screen-loading {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 18px;
+}
+.diagnostico-page .spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--card-border);
+  border-top-color: var(--gold);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.diagnostico-page #loading-text {
+  color: var(--muted);
+  font-size: 14px;
+}
+.diagnostico-page .score-block {
+  text-align: center;
+  padding: 36px 0 28px;
+  border-bottom: 1px solid var(--card-border);
+  margin-bottom: 28px;
+}
+.diagnostico-page .score-number {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: clamp(56px, 16vw, 84px);
+  color: var(--gold);
+  line-height: 1;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.diagnostico-page .score-number.shown {
+  opacity: 1;
+  transform: translateY(0);
+}
+.diagnostico-page .score-suffix {
+  font-size: 0.35em;
+  color: var(--muted);
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+.diagnostico-page .stage-badge {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 14px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 100px;
+  font-size: 13px;
+  color: var(--gold-bright);
+}
+.diagnostico-page .score-sub {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 14px;
+  max-width: 38ch;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
+}
+.diagnostico-page .lock-wrap {
+  position: relative;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+.diagnostico-page .lock-blur {
+  filter: blur(6px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.diagnostico-page .pillar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.diagnostico-page .pillar-row:last-child {
+  margin-bottom: 0;
+}
+.diagnostico-page .pillar-name {
+  width: 150px;
+  font-size: 13px;
+  color: var(--cream);
+  flex-shrink: 0;
+}
+.diagnostico-page .pillar-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--danger-track);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.diagnostico-page .pillar-bar-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 4px;
+  width: 0%;
+  transition: width .8s ease;
+}
+.diagnostico-page .pillar-pct {
+  width: 36px;
+  text-align: right;
+  font-size: 13px;
+  color: var(--muted);
+}
+.diagnostico-page .lock-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(21, 19, 15, 0.35);
+  text-align: center;
+  padding: 20px;
+}
+.diagnostico-page .lock-overlay p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--cream);
+  max-width: 32ch;
+}
+.diagnostico-page form#lead-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.diagnostico-page form#lead-form label {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: -4px;
+}
+.diagnostico-page form#lead-form input {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--cream);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+}
+.diagnostico-page form#lead-form input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.diagnostico-page form#lead-form input::placeholder {
+  color: #6b6353;
+}
+.diagnostico-page #recommendation-block {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  margin-bottom: 28px;
+}
+.diagnostico-page #recommendation-block h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 18px;
+  margin: 0 0 10px;
+  color: var(--gold-bright);
+}
+.diagnostico-page #recommendation-block p {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--cream);
+  margin: 0;
+}
+.diagnostico-page #final-cta p.confirm {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.diagnostico-page .hidden {
+  display: none !important;
+}
+.diagnostico-page :focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .diagnostico-page * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

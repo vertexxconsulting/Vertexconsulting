@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico de Maturidade Empresarial — Vertex Consulting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15130f;
+    --ink-2:#1c1914;
+    --card:#1e1b16;
+    --card-border:#352c1f;
+    --gold:#c6992f;
+    --gold-bright:#e7be5a;
+    --gold-dim:#8a6c27;
+    --cream:#f2ede2;
+    --muted:#a79c87;
+    --danger-track:#2a251d;
+    --radius:8px;
+    --maxw:640px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--cream);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{
+    width:100%;
+    max-width:var(--maxw);
+    padding:32px 20px 64px;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:40px;
+  }
+  .brand-mark{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--gold);
+    flex-shrink:0;
+  }
+  .brand-name{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    letter-spacing:0.02em;
+    font-size:15px;
+    color:var(--cream);
+  }
+  .brand-name span{color:var(--gold);}
+
+  .screen{display:none;flex:1;flex-direction:column;}
+  .screen.active{display:flex;}
+
+  /* ---------- INTRO ---------- */
+  #screen-intro h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(28px,6vw,40px);
+    line-height:1.15;
+    margin:0 0 18px;
+    max-width:11ch;
+  }
+  #screen-intro p.lead{
+    color:var(--muted);
+    font-size:16px;
+    line-height:1.6;
+    max-width:46ch;
+    margin:0 0 32px;
+  }
+  .feature-list{
+    list-style:none;
+    margin:0 0 40px;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .feature-list li{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    font-size:15px;
+    line-height:1.5;
+    color:var(--cream);
+  }
+  .feature-list .dot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--gold);
+    margin-top:8px;
+    flex-shrink:0;
+  }
+  .meta-line{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:16px;
+  }
+
+  /* ---------- BUTTONS ---------- */
+  .btn{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    border-radius:var(--radius);
+    padding:16px 24px;
+    transition:transform .15s ease, background .15s ease, opacity .15s ease;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{
+    background:var(--gold);
+    color:#1a1508;
+  }
+  .btn-primary:hover{background:var(--gold-bright);}
+  .btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+  .btn-block{width:100%;}
+  .btn-ghost{
+    background:transparent;
+    color:var(--muted);
+    padding:10px 0;
+    font-weight:500;
+    font-size:14px;
+  }
+  .btn-ghost:hover{color:var(--cream);}
+
+  /* ---------- QUIZ ---------- */
+  .progress-track{
+    width:100%;
+    height:3px;
+    background:var(--danger-track);
+    border-radius:2px;
+    margin-bottom:36px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--gold);
+    border-radius:2px;
+    width:0%;
+    transition:width .35s ease;
+  }
+  .pillar-tag{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:18px;
+  }
+  .pillar-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);}
+  #question-count{color:var(--muted); margin-left:auto; font-size:13px;}
+
+  .question-text{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(22px,4.5vw,28px);
+    line-height:1.3;
+    margin:0 0 28px;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .option{
+    text-align:left;
+    background:var(--card);
+    border:1px solid var(--card-border);
+    color:var(--cream);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    font-size:15px;
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .option:hover{border-color:var(--gold-dim);}
+  .option.selected{
+    border-color:var(--gold);
+    background:#26200f;
+  }
+  #quiz-back{align-self:flex-start;}
+
+  /* ---------- LOADING ---------- */
+  #screen-loading{
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:18px;
+  }
+  .spinner{
+    width:34px;height:34px;
+    border-radius:50%;
+    border:2px solid var(--card-border);
+    border-top-color:var(--gold);
+    animation:spin 0.9s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  #loading-text{color:var(--muted); font-size:14px;}
+
+  /* ---------- RESULTS ---------- */
+  .score-block{
+    text-align:center;
+    padding:36px 0 28px;
+    border-bottom:1px solid var(--card-border);
+    margin-bottom:28px;
+  }
+  .score-number{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:clamp(56px,16vw,84px);
+    color:var(--gold);
+    line-height:1;
+    opacity:0;
+    transform:translateY(6px);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .score-number.shown{opacity:1;transform:translateY(0);}
+  .score-suffix{font-size:0.35em; color:var(--muted); font-family:'Inter',sans-serif; font-weight:600;}
+  .stage-badge{
+    display:inline-block;
+    margin-top:12px;
+    padding:6px 14px;
+    border:1px solid var(--gold-dim);
+    border-radius:100px;
+    font-size:13px;
+    color:var(--gold-bright);
+  }
+  .score-sub{
+    color:var(--muted);
+    font-size:14px;
+    margin-top:14px;
+    max-width:38ch;
+    margin-left:auto;
+    margin-right:auto;
+    line-height:1.5;
+  }
+
+  .lock-wrap{
+    position:relative;
+    border:1px solid var(--card-border);
+    border-radius:var(--radius);
+    padding:24px 20px;
+    margin-bottom:28px;
+    overflow:hidden;
+  }
+  .lock-blur{
+    filter:blur(6px);
+    opacity:0.5;
+    pointer-events:none;
+  }
+  .pillar-row{display:flex; align-items:center; gap:14px; margin-bottom:16px;}
+  .pillar-row:last-child{margin-bottom:0;}
+  .pillar-name{width:150px; font-size:13px; color:var(--cream); flex-shrink:0;}
+  .pillar-bar-track{flex:1; height:8px; background:var(--danger-track); border-radius:4px; overflow:hidden;}
+  .pillar-bar-fill{height:100%; background:var(--gold); border-radius:4px; width:0%; transition:width .8s ease;}
+  .pillar-pct{width:36px; text-align:right; font-size:13px; color:var(--muted);}
+
+  .lock-overlay{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:10px;
+    background:rgba(21,19,15,0.35);
+    text-align:center;
+    padding:20px;
+  }
+  .lock-overlay p{margin:0; font-size:14px; color:var(--cream); max-width:32ch;}
+
+  form#lead-form{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-bottom:28px;
+  }
+  form#lead-form label{
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:-4px;
+  }
+  form#lead-form input{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    color:var(--cream);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    font-size:15px;
+    font-family:'Inter',sans-serif;
+  }
+  form#lead-form input:focus{outline:none; border-color:var(--gold);}
+  form#lead-form input::placeholder{color:#6b6353;}
+
+  #recommendation-block{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:var(--radius);
+    padding:22px 20px;
+    margin-bottom:28px;
+  }
+  #recommendation-block h3{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:18px;
+    margin:0 0 10px;
+    color:var(--gold-bright);
+  }
+  #recommendation-block p{
+    font-size:14.5px;
+    line-height:1.6;
+    color:var(--cream);
+    margin:0;
+  }
+
+  #final-cta p.confirm{
+    font-size:14px;
+    color:var(--muted);
+    margin-bottom:16px;
+  }
+
+  .hidden{display:none !important;}
+
+  :focus-visible{outline:2px solid var(--gold-bright); outline-offset:2px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div class="brand-name">VERTEX <span>CONSULTING</span></div>
+  </div>
+
+  <!-- ================= INTRO ================= -->
+  <section id="screen-intro" class="screen active">
+    <h1>O que está travando o crescimento da sua empresa?</h1>
+    <p class="lead">Responda 15 perguntas rápidas sobre posicionamento, marketing, IA, gestão e vendas e descubra em que fase seu negócio está — e o que fazer primeiro.</p>
+    <ul class="feature-list">
+      <li><span class="dot"></span> Sua pontuação em 5 pilares de crescimento</li>
+      <li><span class="dot"></span> A fase atual da sua empresa: Sobrevivência, Estruturação, Escala ou Expansão</li>
+      <li><span class="dot"></span> A prioridade número 1 para destravar o próximo nível</li>
+    </ul>
+    <button class="btn btn-primary btn-block" id="start-btn">Começar diagnóstico</button>
+    <p class="meta-line">Leva cerca de 5 minutos. Sem cadastro até o final.</p>
+  </section>
+
+  <!-- ================= QUIZ ================= -->
+  <section id="screen-quiz" class="screen">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="pillar-tag">
+      <span class="dot"></span>
+      <span id="pillar-label">Posicionamento</span>
+      <span id="question-count">1 / 15</span>
+    </div>
+    <h2 class="question-text" id="question-text"></h2>
+    <div class="options" id="options-wrap"></div>
+    <button class="btn btn-ghost" id="quiz-back">Voltar</button>
+  </section>
+
+  <!-- ================= LOADING ================= -->
+  <section id="screen-loading" class="screen">
+    <div class="spinner"></div>
+    <div id="loading-text">Calculando seu diagnóstico…</div>
+  </section>
+
+  <!-- ================= RESULTS ================= -->
+  <section id="screen-results" class="screen">
+    <div class="score-block">
+      <div class="score-number" id="score-number">0<span class="score-suffix">/100</span></div>
+      <div class="stage-badge" id="stage-badge">—</div>
+      <p class="score-sub" id="score-sub"></p>
+    </div>
+
+    <div class="lock-wrap" id="lock-wrap">
+      <div id="pillar-bars" class="lock-blur"></div>
+      <div class="lock-overlay" id="lock-overlay">
+        <p>Seu raio-x completo por pilar — e a prioridade número 1 para sua empresa — está pronto.</p>
+      </div>
+    </div>
+
+    <form id="lead-form">
+      <label for="f-name">Nome</label>
+      <input id="f-name" type="text" placeholder="Seu nome" required>
+      <label for="f-whats">WhatsApp</label>
+      <input id="f-whats" type="tel" placeholder="(42) 90000-0000" required>
+      <label for="f-email">E-mail (opcional)</label>
+      <input id="f-email" type="email" placeholder="voce@empresa.com.br">
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top:6px;">Ver meu diagnóstico completo</button>
+    </form>
+
+    <div id="unlocked-content" class="hidden">
+      <div id="recommendation-block">
+        <h3 id="rec-title">Prioridade número 1</h3>
+        <p id="rec-text"></p>
+      </div>
+      <div id="final-cta">
+        <p class="confirm">Prontinho — seu diagnóstico completo também foi enviado para o seu WhatsApp.</p>
+        <a href="#" id="whatsapp-cta" class="btn btn-primary btn-block" target="_blank" rel="noopener" style="display:block; text-align:center; text-decoration:none;">Agendar minha Sessão Estratégica</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+
+  // ============ CONFIG ============
+  // TODO: substituir pelo número real da Vertex Consulting (formato: 55DDDNÚMERO)
+  const WHATSAPP_NUMBER = "5542900000000";
+
+  const PILLARS = [
+    {
+      key:"posicionamento", label:"Posicionamento",
+      recommendation:"Seu diagnóstico aponta o posicionamento como prioridade: construir uma mensagem clara sobre quem você atende e por que escolheriam você muda a forma como sua empresa é percebida antes mesmo da comparação de preço.",
+      questions:[
+        {text:"Quando alguém pergunta o que sua empresa faz, você consegue responder em uma frase clara, sem enrolação?", options:[
+          {text:"Sim, sempre",score:3},{text:"Às vezes, depende de quem pergunta",score:2},{text:"Não, é difícil resumir",score:1}]},
+        {text:"Seus clientes ideais conseguem dizer por que escolheriam você e não um concorrente?", options:[
+          {text:"Sim, temos um diferencial claro",score:3},{text:"Mais ou menos, não é tão evidente",score:2},{text:"Não sabemos dizer",score:1}]},
+        {text:"Sua marca (visual, tom de voz, mensagem) é a mesma em todos os canais onde você aparece?", options:[
+          {text:"Sim, é consistente",score:3},{text:"Parcialmente",score:2},{text:"Cada canal fala uma coisa diferente",score:1}]}
+      ]
+    },
+    {
+      key:"marketing", label:"Marketing",
+      recommendation:"O gargalo está na geração de demanda. Uma estratégia de marketing recorrente evita que o crescimento da empresa dependa só de indicação — e traz previsibilidade para o caixa.",
+      questions:[
+        {text:"Sua empresa gera novos contatos de clientes em potencial toda semana, sem depender só de indicação?", options:[
+          {text:"Sim, temos um processo ativo",score:3},{text:"De vez em quando",score:2},{text:"Não, dependemos de indicação",score:1}]},
+        {text:"Você sabe quanto custa, em média, conquistar um novo cliente?", options:[
+          {text:"Sim, acompanhamos esse número",score:3},{text:"Tenho uma ideia aproximada",score:2},{text:"Não faço ideia",score:1}]},
+        {text:"Suas redes sociais e site geram alguma conversa ou contato real com potenciais clientes?", options:[
+          {text:"Sim, regularmente",score:3},{text:"Raramente",score:2},{text:"Praticamente nunca",score:1}]}
+      ]
+    },
+    {
+      key:"ia", label:"Inteligência Artificial",
+      recommendation:"Há uma oportunidade grande de ganhar tempo e reduzir custo operacional aplicando IA nos processos do dia a dia — atendimento, conteúdo e análise de dados podem rodar com muito menos esforço manual.",
+      questions:[
+        {text:"Sua empresa usa alguma ferramenta de IA para ganhar tempo (atendimento, conteúdo, análise de dados)?", options:[
+          {text:"Sim, já faz parte da rotina",score:3},{text:"Usamos pontualmente",score:2},{text:"Nunca usamos",score:1}]},
+        {text:"Se você tirasse uma semana de férias, os processos que dependem de IA ou automação continuariam rodando sozinhos?", options:[
+          {text:"Sim, está tudo automatizado",score:3},{text:"Uma parte sim",score:2},{text:"Não, tudo depende de mim ou da equipe",score:1}]},
+        {text:"Você sente que está atualizado sobre como a IA pode ser aplicada no seu tipo de negócio?", options:[
+          {text:"Sim, me atualizo com frequência",score:3},{text:"Sei o básico",score:2},{text:"Não tenho tempo pra isso",score:1}]}
+      ]
+    },
+    {
+      key:"gestao", label:"Gestão",
+      recommendation:"Sua operação ainda depende demais de você. Estruturar processos e indicadores simples libera seu tempo — e sua cabeça — para pensar em crescimento, não só em apagar incêndio.",
+      questions:[
+        {text:"Você consegue ver, em poucos minutos, os principais números do seu negócio (faturamento, custos, margem)?", options:[
+          {text:"Sim, tenho isso organizado",score:3},{text:"Consigo, mas com esforço",score:2},{text:"Não, fica tudo espalhado",score:1}]},
+        {text:"Sua equipe sabe exatamente o que precisa entregar e até quando, sem precisar te perguntar toda hora?", options:[
+          {text:"Sim, os processos são claros",score:3},{text:"Parcialmente",score:2},{text:"Não, tudo passa por mim",score:1}]},
+        {text:"Se você se afastasse por um mês, a empresa manteria o ritmo?", options:[
+          {text:"Sim, tranquilamente",score:3},{text:"Com dificuldade",score:2},{text:"Não, tudo pararia",score:1}]}
+      ]
+    },
+    {
+      key:"vendas", label:"Vendas",
+      recommendation:"Formalizar um processo comercial — com etapas e argumentos claros para lidar com objeção de preço — tende a aumentar sua taxa de fechamento sem precisar recorrer a desconto.",
+      questions:[
+        {text:"Sua empresa tem um processo definido de vendas, com etapas claras do primeiro contato até o fechamento?", options:[
+          {text:"Sim, bem definido",score:3},{text:"Existe, mas informal",score:2},{text:"Cada venda acontece do seu jeito",score:1}]},
+        {text:"Você sabe, hoje, quantos contatos viram cliente (sua taxa de conversão)?", options:[
+          {text:"Sim, acompanho esse número",score:3},{text:"Tenho uma noção",score:2},{text:"Não sei dizer",score:1}]},
+        {text:"Sua equipe (ou você) sabe lidar com objeções de preço sem precisar dar desconto?", options:[
+          {text:"Sim, temos argumentos sólidos",score:3},{text:"Às vezes funciona",score:2},{text:"Geralmente cedemos no preço",score:1}]}
+      ]
+    }
+  ];
+
+  const STAGES = [
+    {max:40, name:"Fase de Sobrevivência", sub:"O foco agora é parar de apagar incêndio e criar uma base mínima que sustente o crescimento."},
+    {max:65, name:"Fase de Estruturação", sub:"A base existe, mas ainda depende demais de esforço manual e de uma pessoa só."},
+    {max:85, name:"Fase de Escala", sub:"Sua empresa já cresce — o desafio agora é crescer sem perder margem nem qualidade."},
+    {max:100, name:"Fase de Expansão", sub:"Sua empresa está pronta para mirar em novos mercados, produtos ou operações."}
+  ];
+
+  // flatten questions, keep pillar reference
+  const FLAT = [];
+  PILLARS.forEach(p=>{
+    p.questions.forEach(q=>FLAT.push({pillarKey:p.key, pillarLabel:p.label, ...q}));
+  });
+
+  let idx = 0;
+  const answers = new Array(FLAT.length).fill(null);
+
+  const screens = {
+    intro: document.getElementById('screen-intro'),
+    quiz: document.getElementById('screen-quiz'),
+    loading: document.getElementById('screen-loading'),
+    results: document.getElementById('screen-results')
+  };
+
+  function showScreen(name){
+    Object.values(screens).forEach(s=>s.classList.remove('active'));
+    screens[name].classList.add('active');
+  }
+
+  document.getElementById('start-btn').addEventListener('click', ()=>{
+    showScreen('quiz');
+    renderQuestion();
+  });
+
+  document.getElementById('quiz-back').addEventListener('click', ()=>{
+    if(idx > 0){
+      idx--;
+      renderQuestion();
+    } else {
+      showScreen('intro');
+    }
+  });
+
+  function renderQuestion(){
+    const q = FLAT[idx];
+    document.getElementById('pillar-label').textContent = q.pillarLabel;
+    document.getElementById('question-count').textContent = (idx+1) + ' / ' + FLAT.length;
+    document.getElementById('progress-fill').style.width = ((idx) / FLAT.length * 100) + '%';
+    document.getElementById('question-text').textContent = q.text;
+
+    const wrap = document.getElementById('options-wrap');
+    wrap.innerHTML = '';
+    q.options.forEach((opt, i)=>{
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'option';
+      btn.textContent = opt.text;
+      if(answers[idx] === i) btn.classList.add('selected');
+      btn.addEventListener('click', ()=>selectOption(i));
+      wrap.appendChild(btn);
+    });
+  }
+
+  function selectOption(i){
+    answers[idx] = i;
+    [...document.getElementById('options-wrap').children].forEach((el,k)=>{
+      el.classList.toggle('selected', k===i);
+    });
+    setTimeout(()=>{
+      if(idx < FLAT.length - 1){
+        idx++;
+        renderQuestion();
+      } else {
+        document.getElementById('progress-fill').style.width = '100%';
+        finishQuiz();
+      }
+    }, 320);
+  }
+
+  function finishQuiz(){
+    showScreen('loading');
+    setTimeout(computeResults, 1100);
+  }
+
+  function computeResults(){
+    // tally per pillar
+    const pillarTotals = {};
+    PILLARS.forEach(p=>pillarTotals[p.key] = {sum:0, max:0, label:p.label});
+
+    FLAT.forEach((q, i)=>{
+      const chosen = answers[i];
+      const score = chosen !== null ? q.options[chosen].score : 1;
+      pillarTotals[q.pillarKey].sum += score;
+      pillarTotals[q.pillarKey].max += 3;
+    });
+
+    const pillarPercents = Object.entries(pillarTotals).map(([key, v])=>({
+      key, label:v.label, pct: Math.round((v.sum / v.max) * 100)
+    }));
+
+    const overall = Math.round(pillarPercents.reduce((a,b)=>a+b.pct,0) / pillarPercents.length);
+
+    renderResults(overall, pillarPercents);
+    showScreen('results');
+  }
+
+  function renderResults(overall, pillarPercents){
+    // score count-up
+    const scoreEl = document.getElementById('score-number');
+    let current = 0;
+    const target = overall;
+    const duration = 700;
+    const start = performance.now();
+    scoreEl.classList.add('shown');
+    function tick(now){
+      const t = Math.min(1, (now-start)/duration);
+      current = Math.round(t * target);
+      scoreEl.innerHTML = current + '<span class="score-suffix">/100</span>';
+      if(t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    const stage = STAGES.find(s=>overall <= s.max);
+    document.getElementById('stage-badge').textContent = stage.name;
+    document.getElementById('score-sub').textContent = stage.sub;
+
+    // pillar bars (blurred until unlocked)
+    const barsWrap = document.getElementById('pillar-bars');
+    barsWrap.innerHTML = '';
+    pillarPercents.forEach(p=>{
+      const row = document.createElement('div');
+      row.className = 'pillar-row';
+      row.innerHTML = `
+        <div class="pillar-name">${p.label}</div>
+        <div class="pillar-bar-track"><div class="pillar-bar-fill" data-pct="${p.pct}"></div></div>
+        <div class="pillar-pct">${p.pct}%</div>
+      `;
+      barsWrap.appendChild(row);
+    });
+
+    // weakest pillar -> recommendation
+    const weakest = [...pillarPercents].sort((a,b)=>a.pct-b.pct)[0];
+    const pillarData = PILLARS.find(p=>p.key===weakest.key);
+    document.getElementById('rec-title').textContent = 'Prioridade número 1: ' + weakest.label;
+    document.getElementById('rec-text').textContent = pillarData.recommendation;
+
+    // store for whatsapp link
+    window.__vertexResult = {overall, stageName:stage.name, weakest:weakest.label};
+
+    // animate bars shortly after unlock (kept at 0 width until lead-form submit)
+  }
+
+  document.getElementById('lead-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const name = document.getElementById('f-name').value.trim();
+    const whats = document.getElementById('f-whats').value.trim();
+    if(!name || !whats) return;
+
+    // TODO: em produção, enviar {name, whats, email, overall, pillarPercents} para seu CRM / planilha / webhook aqui.
+
+    document.getElementById('lock-overlay').remove();
+    document.getElementById('pillar-bars').classList.remove('lock-blur');
+    document.querySelectorAll('.pillar-bar-fill').forEach(el=>{
+      requestAnimationFrame(()=>{ el.style.width = el.dataset.pct + '%'; });
+    });
+
+    this.classList.add('hidden');
+    const unlocked = document.getElementById('unlocked-content');
+    unlocked.classList.remove('hidden');
+
+    const r = window.__vertexResult || {};
+    const msg = `Olá! Fiz o diagnóstico da Vertex e tirei ${r.overall}/100 (${r.stageName}). Quero agendar minha Sessão Estratégica.`;
+    document.getElementById('whatsapp-cta').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  });
+
+})();
+</script>
+
+</body>
+</html>

@@ -46,3 +46,22 @@
 .final-cta__signature strong{margin:0;color:#d5b982;font-size:.67rem;letter-spacing:.22em}
 .final-cta__signature span{color:#898378;font-size:.7rem}
 @media (max-width:620px){.final-cta{padding:82px 0 70px}.final-cta__eyebrow{margin-bottom:31px}.final-cta__index{font-size:.53rem}.final-cta h2{font-size:clamp(2.55rem,12vw,4rem)}.final-cta__lead{font-size:.94rem!important}.final-cta__action{align-items:flex-start;flex-direction:column;gap:13px}.final-cta__signature{align-items:flex-start;flex-direction:column;gap:8px;margin-top:57px}}
+
+/* Portfolio refinement: turn project cards into a stronger proof section. */
+.projects-new__intro{display:flex;flex-direction:column;justify-content:space-between;gap:26px;height:100%}
+.projects-new__intro>p{color:#9b9990;line-height:1.75;font-size:.9rem;max-width:38ch}
+.projects-new__count{display:flex;align-items:baseline;gap:10px;color:#c7a873;font-family:Outfit,sans-serif;font-size:2.2rem;border-top:1px solid rgba(176,141,87,.3);padding-top:14px}
+.projects-new__count small{color:#716e65;font-family:Inter,sans-serif;font-size:.61rem;letter-spacing:.14em;text-transform:uppercase}
+.project-showcase__image{position:relative;overflow:hidden}
+.project-showcase__image img{transition:transform .5s ease,filter .5s ease}
+.project-showcase:hover .project-showcase__image img{transform:scale(1.045);filter:saturate(1)}
+.project-showcase__number{position:absolute;right:16px;top:14px;color:#e1c78f;background:rgba(13,13,13,.78);padding:7px 9px;font-size:.58rem;letter-spacing:.12em}
+.project-showcase__body{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:24px!important}
+.project-showcase__body>div{min-width:0}
+.project-showcase__arrow{width:35px;height:35px;display:grid;place-items:center;flex-shrink:0;border:1px solid rgba(176,141,87,.35);color:#c7a873;transition:.2s ease}
+.project-showcase:hover .project-showcase__arrow{background:#b08d57;color:#0d0d0d}
+.project-showcase--dark .project-showcase__body{padding:0!important}
+.projects-new__footer{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:18px;border-top:1px solid rgba(255,255,255,.1);color:#77756d;font-size:.72rem}
+.projects-new__footer button{display:flex;align-items:center;gap:7px;background:none;border:0;color:#c7a873;font-size:.72rem;font-weight:700}
+@media (max-width:920px){.projects-new__intro{gap:16px}.projects-new__count{font-size:1.7rem}}
+@media (max-width:620px){.projects-new__intro{gap:24px}.projects-new__footer{align-items:flex-start;flex-direction:column;gap:15px}.project-showcase__body{padding:20px!important}.projects-new__count{font-size:1.6rem}}

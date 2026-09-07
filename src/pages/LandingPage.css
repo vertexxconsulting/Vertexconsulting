@@ -14,3 +14,8 @@
 .hero-new__scroll{left:auto;right:max(24px,calc((100% - 1160px)/2));bottom:19px;white-space:nowrap}
 @media (max-width:920px){.hero-new__scroll{right:24px}}
 @media (max-width:620px){.hero-new__strip{max-width:100%;padding-bottom:0}.hero-new__scroll{position:static;margin:20px auto 0;justify-content:center;white-space:normal;text-align:center;padding:0 17px;font-size:.53rem}}
+
+/* Extra breathing room between the category rail and the scroll cue. */
+.hero-new__strip{padding-bottom:34px}
+.hero-new__scroll{bottom:6px}
+@media (max-width:620px){.hero-new__strip{padding-bottom:0}.hero-new__scroll{bottom:auto;margin-top:30px}}

@@ -90,6 +90,28 @@ export default function LandingPage() {
     return () => { window.removeEventListener('scroll', onScroll); window.cancelAnimationFrame(frame); };
   }, []);
   useEffect(() => {
+    if (window.matchMedia('(pointer: coarse)').matches) return undefined;
+    let targetX = window.innerWidth * 0.5;
+    let targetY = window.innerHeight * 0.35;
+    let currentX = targetX;
+    let currentY = targetY;
+    let frame = 0;
+    const moveOrb = (event: PointerEvent) => {
+      targetX = event.clientX;
+      targetY = event.clientY;
+    };
+    const animateOrb = () => {
+      currentX += (targetX - currentX) * 0.12;
+      currentY += (targetY - currentY) * 0.12;
+      document.documentElement.style.setProperty('--cursor-x', `${currentX}px`);
+      document.documentElement.style.setProperty('--cursor-y', `${currentY}px`);
+      frame = window.requestAnimationFrame(animateOrb);
+    };
+    window.addEventListener('pointermove', moveOrb, { passive: true });
+    frame = window.requestAnimationFrame(animateOrb);
+    return () => { window.removeEventListener('pointermove', moveOrb); window.cancelAnimationFrame(frame); };
+  }, []);
+  useEffect(() => {
     const sections = navItems.map((item) => document.getElementById(item.id)).filter((item): item is HTMLElement => Boolean(item));
     const observer = new IntersectionObserver((entries) => { const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]; if (visible?.target instanceof HTMLElement) setActive(visible.target.id); }, { rootMargin: '-30% 0px -58% 0px', threshold: [0.1, 0.4, 0.7] });
     sections.forEach((section) => observer.observe(section)); return () => observer.disconnect();
@@ -112,6 +134,7 @@ export default function LandingPage() {
 
   return <div className="vertex-site">
     <div className="scroll-progress" aria-hidden="true" />
+    <div className="cursor-orb" aria-hidden="true" />
     <a className="skip-link" href="#main-content">Pular para o conteúdo</a>
     <nav className={`site-nav ${scrolled ? 'site-nav--scrolled' : ''}`} aria-label="Navegação principal"><div className="site-nav__inner"><button className="brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Voltar ao início"><img src="/logo.jpeg" alt="Vertex Consulting" /><span>VERTEX<span>.</span></span></button><div className="site-nav__links">{navItems.map((item) => <button key={item.id} className={active === item.id ? 'active' : ''} onClick={() => scrollTo(item.id)}>{item.label}</button>)}<button className="site-nav__cta" onClick={openForm}>Solicitar diagnóstico <ArrowUpRight size={15} /></button></div><button className="menu-button" onClick={() => setMobileMenu(true)} aria-label="Abrir menu"><Menu size={23} /></button></div></nav>
     {mobileMenu && <div className="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu"><button className="mobile-menu__close" onClick={() => setMobileMenu(false)} aria-label="Fechar menu"><X /></button><div>{navItems.map((item) => <button key={item.id} onClick={() => scrollTo(item.id)}>{item.label}<ArrowUpRight size={17} /></button>)}<button className="btn btn--gold" onClick={openForm}>Solicitar diagnóstico <ArrowUpRight size={17} /></button></div></div>}

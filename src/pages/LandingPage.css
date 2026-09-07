@@ -80,3 +80,9 @@ html{scroll-behavior:smooth}
 .proof-bar>div{transition:transform .35s ease,color .35s ease}.proof-bar>div:hover{transform:translateY(-4px)}
 .checklist>div,.method-item,.faq-item{transition:padding-left .25s ease,background .25s ease}.checklist>div:hover{padding-left:9px;background:rgba(176,141,87,.035)}.method-item:hover{background:rgba(176,141,87,.035)}.faq-item:hover{padding-left:8px}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.scroll-progress{transition:none}.hero-new__backdrop,.hero-new__grid,.hero-new__visual{transform:none!important;transition:none}.section-new:before{transition:none}.reveal:nth-child(n){transition-delay:0s}}
+
+/* Cursor orb: soft ambient light that follows the pointer without blocking interaction. */
+.cursor-orb{position:fixed;z-index:2;top:0;left:0;width:260px;height:260px;border-radius:50%;pointer-events:none;transform:translate3d(calc(var(--cursor-x,50vw) - 50%),calc(var(--cursor-y,35vh) - 50%),0);background:radial-gradient(circle,rgba(213,178,105,.14) 0%,rgba(176,141,87,.065) 27%,rgba(176,141,87,0) 70%);filter:blur(7px);mix-blend-mode:screen;opacity:.72;will-change:transform;transition:opacity .3s ease}
+.vertex-site:has(a:hover) .cursor-orb,.vertex-site:has(button:hover) .cursor-orb{opacity:1;width:300px;height:300px}
+@media (pointer:coarse){.cursor-orb{display:none}}
+@media (prefers-reduced-motion:reduce){.cursor-orb{display:none}}

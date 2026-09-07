@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 import './Diagnostico.css';
 
-const WHATSAPP_NUMBER = "5542900000000";
+const WHATSAPP_NUMBER = "5542998250506";
 
 const PILLARS = [
   {

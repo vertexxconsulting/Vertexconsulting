@@ -215,7 +215,7 @@ export async function updateBoltenOpportunity(
     return false;
   }
 }
-export const BOLTEN_WHATSAPP = '5542900000000';
+export const BOLTEN_WHATSAPP = '5542998250506';
 export const getBoltenWhatsAppLink = (message: string = 'Olá, gostaria de saber mais sobre as soluções.') => {
   return `https://wa.me/${BOLTEN_WHATSAPP}?text=${encodeURIComponent(message)}`;
 };

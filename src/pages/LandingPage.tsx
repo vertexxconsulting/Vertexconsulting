@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowDown, ArrowUpRight, Check, ChevronDown, ChevronRight, CircleAlert,
   Clock3, Layers3, Menu, MessageCircle, Target, Users, X, Zap,
 } from 'lucide-react';
-import { createContact } from '../services/contactService';
 import { getBoltenWhatsAppLink } from '../services/boltenService';
 import './LandingPage.css';
 
@@ -63,6 +63,7 @@ const initialForm: FormData = { name: '', email: '', phone: '', company: '', ser
 function InstagramIcon() { return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>; }
 
 export default function LandingPage() {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
   const [mobileMenu, setMobileMenu] = useState(false);
@@ -130,7 +131,16 @@ export default function LandingPage() {
   const openForm = () => { setMobileMenu(false); setFormStatus('idle'); setFormOpen(true); };
   const setField = (key: keyof FormData) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => { const value = key === 'phone' ? event.target.value.replace(/\D/g, '').slice(0, 11) : event.target.value; setFormData((current) => ({ ...current, [key]: value })); if (formStatus !== 'idle') setFormStatus('idle'); };
   const canSubmit = Object.values(formData).every((value) => value.trim()) && formData.phone.replace(/\D/g, '').length >= 10;
-  const handleSubmit = async (event: FormEvent) => { event.preventDefault(); if (!formRef.current?.reportValidity() || !canSubmit) return; setFormStatus('sending'); try { await createContact(formData); setFormStatus('success'); setFormData(initialForm); } catch { setFormStatus('error'); } };
+  const handleSubmit = (event: FormEvent) => { 
+    event.preventDefault(); 
+    if (!formRef.current?.reportValidity() || !canSubmit) return; 
+    setFormStatus('sending'); 
+    setTimeout(() => {
+      setFormStatus('success'); 
+      navigate('/diagnostico', { state: { formData } });
+      setFormOpen(false);
+    }, 500);
+  };
 
   return <div className="vertex-site">
     <div className="scroll-progress" aria-hidden="true" />

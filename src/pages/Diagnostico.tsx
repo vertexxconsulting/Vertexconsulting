@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 import './Diagnostico.css';
 
@@ -62,12 +63,33 @@ const STAGES = [
 const FLAT = PILLARS.flatMap(p => p.questions.map(q => ({ pillarKey: p.key, pillarLabel: p.label, ...q })));
 
 export default function Diagnostico() {
+  const location = useLocation();
   const [screen, setScreen] = useState<'intro' | 'quiz' | 'loading' | 'results'>('intro');
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>(new Array(FLAT.length).fill(null));
   const [scoreData, setScoreData] = useState<{ overall: number, stageName: string, sub: string, percents: { key: string, label: string, pct: number }[], weakest: any } | null>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [leadForm, setLeadForm] = useState({ name: '', whats: '', email: '' });
+  const [leadForm, setLeadForm] = useState({ 
+    name: '', whats: '', email: '',
+    company: '', has_site: false, instagram: '', service: '', message: ''
+  });
+
+  useEffect(() => {
+    if (location.state?.formData) {
+      const d = location.state.formData;
+      setLeadForm(prev => ({
+        ...prev,
+        name: d.name || '',
+        whats: d.phone || '',
+        email: d.email || '',
+        company: d.company || '',
+        has_site: d.has_site === 'Sim' || d.has_site === 'Sim, funciona bem' || d.has_site === 'Sim, mas não gera oportunidades',
+        instagram: d.instagram || '',
+        service: d.service || '',
+        message: d.message || ''
+      }));
+    }
+  }, [location.state]);
 
   const scoreRef = useRef<HTMLDivElement>(null);
 
@@ -155,6 +177,11 @@ export default function Diagnostico() {
         name: leadForm.name.trim(),
         whatsapp: leadForm.whats.trim(),
         email: leadForm.email.trim() || null,
+        empresa: leadForm.company.trim() || null,
+        tem_site: leadForm.has_site,
+        instagram: leadForm.instagram.trim() || null,
+        servico_interesse: leadForm.service.trim() || null,
+        mensagem: leadForm.message.trim() || null,
         score_overall: scoreData.overall,
         business_stage: scoreData.stageName,
         source: 'diagnostico',

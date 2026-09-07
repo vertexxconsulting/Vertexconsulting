@@ -19,3 +19,13 @@
 .hero-new__strip{padding-bottom:34px}
 .hero-new__scroll{bottom:6px}
 @media (max-width:620px){.hero-new__strip{padding-bottom:0}.hero-new__scroll{bottom:auto;margin-top:30px}}
+
+/* Cost section refinement: a stronger editorial lockup without excessive wrapping. */
+.cost-section__layout{grid-template-columns:1fr 1fr;gap:76px;align-items:start}
+.cost-section__copy h2{max-width:12ch;font-size:clamp(2.85rem,4.2vw,4.7rem);line-height:.98}
+.cost-section__copy .big-line{max-width:24ch;font-size:1.25rem;margin-top:28px}
+.cost-columns{align-self:start;min-height:0}
+.cost-columns>div{min-height:360px}
+.cost-section__footer{padding-top:72px}
+@media (max-width:920px){.cost-section__layout{grid-template-columns:1fr;gap:48px}.cost-section__copy h2{max-width:13ch}.cost-columns>div{min-height:0}}
+@media (max-width:620px){.cost-section__copy h2{max-width:11ch;font-size:clamp(2.65rem,12vw,4rem)}.cost-section__copy .big-line{font-size:1.1rem}}

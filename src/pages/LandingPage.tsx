@@ -74,9 +74,20 @@ export default function LandingPage() {
   const boltenLink = getBoltenWhatsAppLink();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 48);
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+        const progress = Math.min(window.scrollY / maxScroll, 1);
+        document.documentElement.style.setProperty('--scroll-progress', `${progress * 100}%`);
+        document.documentElement.style.setProperty('--hero-shift', `${Math.min(window.scrollY * 0.12, 90)}px`);
+        setScrolled(window.scrollY > 48);
+        frame = 0;
+      });
+    };
     window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => { window.removeEventListener('scroll', onScroll); window.cancelAnimationFrame(frame); };
   }, []);
   useEffect(() => {
     const sections = navItems.map((item) => document.getElementById(item.id)).filter((item): item is HTMLElement => Boolean(item));
@@ -100,6 +111,7 @@ export default function LandingPage() {
   const handleSubmit = async (event: FormEvent) => { event.preventDefault(); if (!formRef.current?.reportValidity() || !canSubmit) return; setFormStatus('sending'); try { await createContact(formData); setFormStatus('success'); setFormData(initialForm); } catch { setFormStatus('error'); } };
 
   return <div className="vertex-site">
+    <div className="scroll-progress" aria-hidden="true" />
     <a className="skip-link" href="#main-content">Pular para o conteúdo</a>
     <nav className={`site-nav ${scrolled ? 'site-nav--scrolled' : ''}`} aria-label="Navegação principal"><div className="site-nav__inner"><button className="brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Voltar ao início"><img src="/logo.jpeg" alt="Vertex Consulting" /><span>VERTEX<span>.</span></span></button><div className="site-nav__links">{navItems.map((item) => <button key={item.id} className={active === item.id ? 'active' : ''} onClick={() => scrollTo(item.id)}>{item.label}</button>)}<button className="site-nav__cta" onClick={openForm}>Solicitar diagnóstico <ArrowUpRight size={15} /></button></div><button className="menu-button" onClick={() => setMobileMenu(true)} aria-label="Abrir menu"><Menu size={23} /></button></div></nav>
     {mobileMenu && <div className="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu"><button className="mobile-menu__close" onClick={() => setMobileMenu(false)} aria-label="Fechar menu"><X /></button><div>{navItems.map((item) => <button key={item.id} onClick={() => scrollTo(item.id)}>{item.label}<ArrowUpRight size={17} /></button>)}<button className="btn btn--gold" onClick={openForm}>Solicitar diagnóstico <ArrowUpRight size={17} /></button></div></div>}

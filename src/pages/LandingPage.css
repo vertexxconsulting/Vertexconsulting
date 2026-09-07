@@ -65,3 +65,18 @@
 .projects-new__footer button{display:flex;align-items:center;gap:7px;background:none;border:0;color:#c7a873;font-size:.72rem;font-weight:700}
 @media (max-width:920px){.projects-new__intro{gap:16px}.projects-new__count{font-size:1.7rem}}
 @media (max-width:620px){.projects-new__intro{gap:24px}.projects-new__footer{align-items:flex-start;flex-direction:column;gap:15px}.project-showcase__body{padding:20px!important}.projects-new__count{font-size:1.6rem}}
+
+/* Global scroll system: progress, depth, stagger and tactile section transitions. */
+html{scroll-behavior:smooth}
+.scroll-progress{position:fixed;top:0;left:0;z-index:3000;width:var(--scroll-progress,0%);height:2px;background:linear-gradient(90deg,#b08d57,#e4c98e);box-shadow:0 0 14px rgba(201,168,76,.7);transition:width .08s linear;pointer-events:none}
+.hero-new__backdrop{transform:translate3d(0,var(--hero-shift,0px),0) scale(1.04);transition:transform .12s linear}
+.hero-new__grid{transform:translate3d(0,calc(var(--hero-shift,0px) * .45),0)}
+.hero-new__visual{transform:translate3d(0,calc(var(--hero-shift,0px) * -.2),0);transition:transform .12s linear}
+.section-new{position:relative;isolation:isolate}
+.section-new:before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 12% 18%,rgba(176,141,87,.06),transparent 25%);opacity:0;transition:opacity 1.1s ease}
+.section-new:has(.reveal.is-visible):before{opacity:1}
+.reveal{will-change:transform,opacity}
+.reveal:nth-child(2){transition-delay:.08s}.reveal:nth-child(3){transition-delay:.16s}.reveal:nth-child(4){transition-delay:.24s}.reveal:nth-child(5){transition-delay:.32s}
+.proof-bar>div{transition:transform .35s ease,color .35s ease}.proof-bar>div:hover{transform:translateY(-4px)}
+.checklist>div,.method-item,.faq-item{transition:padding-left .25s ease,background .25s ease}.checklist>div:hover{padding-left:9px;background:rgba(176,141,87,.035)}.method-item:hover{background:rgba(176,141,87,.035)}.faq-item:hover{padding-left:8px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.scroll-progress{transition:none}.hero-new__backdrop,.hero-new__grid,.hero-new__visual{transform:none!important;transition:none}.section-new:before{transition:none}.reveal:nth-child(n){transition-delay:0s}}

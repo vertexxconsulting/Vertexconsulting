@@ -29,3 +29,20 @@
 .cost-section__footer{padding-top:72px}
 @media (max-width:920px){.cost-section__layout{grid-template-columns:1fr;gap:48px}.cost-section__copy h2{max-width:13ch}.cost-columns>div{min-height:0}}
 @media (max-width:620px){.cost-section__copy h2{max-width:11ch;font-size:clamp(2.65rem,12vw,4rem)}.cost-section__copy .big-line{font-size:1.1rem}}
+
+/* Final CTA refinement: clear hierarchy, stronger close, less empty space. */
+.final-cta{padding:108px 0 92px;background:#15130f;border-top:1px solid rgba(176,141,87,.18)}
+.final-cta__inner{max-width:900px;text-align:left}
+.final-cta__eyebrow{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(176,141,87,.24);padding-bottom:18px;margin-bottom:42px}
+.final-cta__eyebrow .eyebrow{margin:0}
+.final-cta__index{color:#6e695e;font-size:.61rem;letter-spacing:.16em}
+.final-cta h2{max-width:850px;margin:0 0 26px;font-size:clamp(2.7rem,5.3vw,5.25rem);line-height:.98;letter-spacing:-.065em}
+.final-cta h2 em{font-style:normal;color:#c7a873}
+.final-cta__lead{margin:0 0 34px!important;max-width:52ch!important;color:#a19a8b!important;font-size:1.08rem;line-height:1.6!important}
+.final-cta__lead strong{color:#eee9de;font-weight:600}
+.final-cta__action{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.final-cta__action small{margin:0;color:#777066;font-size:.68rem;line-height:1.5;max-width:245px}
+.final-cta__signature{display:flex;align-items:baseline;gap:16px;margin-top:78px;padding-top:17px;border-top:1px solid rgba(255,255,255,.1)}
+.final-cta__signature strong{margin:0;color:#d5b982;font-size:.67rem;letter-spacing:.22em}
+.final-cta__signature span{color:#898378;font-size:.7rem}
+@media (max-width:620px){.final-cta{padding:82px 0 70px}.final-cta__eyebrow{margin-bottom:31px}.final-cta__index{font-size:.53rem}.final-cta h2{font-size:clamp(2.55rem,12vw,4rem)}.final-cta__lead{font-size:.94rem!important}.final-cta__action{align-items:flex-start;flex-direction:column;gap:13px}.final-cta__signature{align-items:flex-start;flex-direction:column;gap:8px;margin-top:57px}}

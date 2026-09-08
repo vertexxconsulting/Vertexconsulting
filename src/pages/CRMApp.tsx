@@ -68,7 +68,6 @@ export default function CRMApp() {
           <div className="login-card">
             <div className="login-logo">
               <img src="/logo.jpeg" alt="Vertex Consulting" />
-              <span>VERTEX</span>
             </div>
             <p className="login-subtitle">Acesso restrito — CRM interno</p>
 

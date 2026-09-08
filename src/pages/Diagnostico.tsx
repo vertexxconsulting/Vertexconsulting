@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 import './Diagnostico.css';
 
@@ -64,6 +64,7 @@ const FLAT = PILLARS.flatMap(p => p.questions.map(q => ({ pillarKey: p.key, pill
 
 export default function Diagnostico() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [screen, setScreen] = useState<'intro' | 'quiz' | 'loading' | 'results'>('intro');
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>(new Array(FLAT.length).fill(null));

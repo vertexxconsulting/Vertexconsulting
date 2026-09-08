@@ -105,11 +105,7 @@ export function LeadDrawer() {
     loadTimeline();
   };
 
-  const formatDays = (dateStr: string) => {
-    if (!dateStr) return '—';
-    const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
-    return days === 0 ? 'hoje' : `${days}d atrás`;
-  };
+
 
   return (
     <>

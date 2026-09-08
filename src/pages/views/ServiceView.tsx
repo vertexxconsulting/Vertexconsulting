@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../services/supabaseClient';
-import { Send, Clock } from 'lucide-react';
+import { Send, Clock, Inbox } from 'lucide-react';
 
 export function ServiceView() {
   const [queues, setQueues] = useState<any[]>([]);

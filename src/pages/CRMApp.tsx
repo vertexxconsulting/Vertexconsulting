@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { Sidebar, ViewType } from '../components/Sidebar';
+import { Sidebar, type ViewType } from '../components/Sidebar';
 import { LeadDrawerProvider } from '../context/LeadDrawerContext';
 import { LeadDrawer } from '../components/LeadDrawer';
 import './CRMApp.css';

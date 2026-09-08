@@ -200,12 +200,15 @@ export default function Diagnostico() {
 
   return (
     <div className="diagnostico-page">
-      <div id="app">
-        <div className="brand">
-          <div className="brand-mark"></div>
-          <div className="brand-name">VERTEX <span>CONSULTING</span></div>
+      <header className="diagnostico-header">
+        <div className="container-new header-inner">
+          <button className="brand" onClick={() => navigate('/')}>
+            <img src="/logo.jpeg" alt="Vertex Consulting" className="brand-mark" />
+          </button>
+          {screen === 'quiz' && <div className="quiz-progress-text">{idx + 1} / {FLAT.length}</div>}
         </div>
-
+      </header>
+      <div id="app">
         <section id="screen-intro" className={`screen ${screen === 'intro' ? 'active' : ''}`}>
           <h1>O que está travando o crescimento da sua empresa?</h1>
           <p className="lead">Responda 15 perguntas rápidas sobre posicionamento, marketing, IA, gestão e vendas e descubra em que fase seu negócio está — e o que fazer primeiro.</p>

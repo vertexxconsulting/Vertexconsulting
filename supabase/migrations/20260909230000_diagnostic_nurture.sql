@@ -20,3 +20,13 @@ CREATE INDEX IF NOT EXISTS idx_contacts_pending_diagnostic_invites
 
 COMMENT ON COLUMN public.contacts.diagnostic_invite_at IS 'Momento a partir do qual o convite do diagnóstico pode ser enviado.';
 COMMENT ON COLUMN public.contacts.diagnostic_invite_sent IS 'Idempotência do convite automático do diagnóstico.';
+
+DO $$
+BEGIN
+  IF to_regclass('public.leads') IS NOT NULL THEN
+    ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS diagnostic_token uuid;
+    CREATE INDEX IF NOT EXISTS idx_leads_diagnostic_token
+      ON public.leads (diagnostic_token)
+      WHERE diagnostic_token IS NOT NULL;
+  END IF;
+END $$;

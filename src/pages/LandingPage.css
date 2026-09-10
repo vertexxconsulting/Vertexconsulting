@@ -89,3 +89,6 @@ html{scroll-behavior:smooth}
 
 /* Hero background: reveal more of the environment while preserving text contrast. */
 .hero-new__backdrop{background:linear-gradient(90deg,rgba(13,13,13,.84) 0%,rgba(13,13,13,.64) 44%,rgba(13,13,13,.18) 100%),url('/bg-hero.jpg') center/cover;opacity:.92}
+
+.quiet-link--muted{color:#8b867b;max-width:265px;line-height:1.45;font-size:.69rem;cursor:default}
+.quiet-link--muted:hover{color:#b8aa8e}

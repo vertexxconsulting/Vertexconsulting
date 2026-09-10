@@ -52,6 +52,11 @@ export interface ContactData {
   bolten_contact_id?: string | null;
   bolten_opportunity_id?: string | null;
   bolten_status?: string | null;
+  diagnostic_token?: string | null;
+  diagnostic_invite_at?: string | null;
+  diagnostic_invite_sent?: boolean;
+  diagnostic_invite_sent_at?: string | null;
+  diagnostic_completed_at?: string | null;
 }
 
 export interface KanbanCardData {

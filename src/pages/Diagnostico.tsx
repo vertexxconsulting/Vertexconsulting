@@ -65,6 +65,7 @@ const FLAT = PILLARS.flatMap(p => p.questions.map(q => ({ pillarKey: p.key, pill
 export default function Diagnostico() {
   const location = useLocation();
   const navigate = useNavigate();
+  const diagnosticToken = new URLSearchParams(location.search).get('token');
   const [screen, setScreen] = useState<'intro' | 'quiz' | 'loading' | 'results'>('intro');
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>(new Array(FLAT.length).fill(null));
@@ -186,6 +187,7 @@ export default function Diagnostico() {
         score_overall: scoreData.overall,
         business_stage: scoreData.stageName,
         source: 'diagnostico',
+        diagnostic_token: diagnosticToken,
         ...scoresMap
       });
     }

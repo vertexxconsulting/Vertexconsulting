@@ -1,5 +1,4 @@
 import { supabase } from './supabaseClient';
-import { sendLeadNotification } from './evolutionApi';
 import { syncLeadToBolten, updateBoltenOpportunity } from './boltenService';
 import type { ContactData, ContactStatus, Priority, DashboardMetrics } from '../types';
 
@@ -15,6 +14,8 @@ export async function createContact(data: {
 }): Promise<{ contact: ContactData | null; whatsappSent: boolean }> {
   // Gera o ID no cliente: evita o SELECT pós-insert (que o RLS bloqueia p/ anon)
   const id = crypto.randomUUID();
+  const diagnosticToken = crypto.randomUUID();
+  const diagnosticInviteAt = new Date(Date.now() + 20 * 60 * 1000).toISOString();
 
   const { error } = await supabase
     .from('contacts')
@@ -25,6 +26,10 @@ export async function createContact(data: {
       priority: 'Média',
       notes: '',
       whatsapp_sent: false,
+      diagnostic_token: diagnosticToken,
+      diagnostic_invite_at: diagnosticInviteAt,
+      diagnostic_invite_sent: false,
+      diagnostic_completed_at: null,
       created_at: new Date().toISOString(),
     }]);
 
@@ -52,18 +57,14 @@ export async function createContact(data: {
     priority: 'Média',
     notes: '',
     whatsapp_sent: false,
+    diagnostic_token: diagnosticToken,
+    diagnostic_invite_at: diagnosticInviteAt,
+    diagnostic_invite_sent: false,
+    diagnostic_completed_at: null,
     created_at: new Date().toISOString(),
   };
 
-  let whatsappSent = false;
-  if (data.phone) {
-    whatsappSent = await sendLeadNotification(data.name, data.phone);
-    if (whatsappSent && contact) {
-      await supabase.rpc('mark_whatsapp_sent', { p_contact_id: contact.id });
-    }
-  }
-
-  return { contact, whatsappSent };
+  return { contact, whatsappSent: false };
 }
 
 export async function fetchContacts(): Promise<ContactData[]> {

@@ -35,7 +35,7 @@ O diagnóstico continua acessível por URL direta para permitir a entrega indivi
 
 ## Arquitetura implementada
 
-A primeira etapa usa o cadastro existente em `contacts`, a criação de oportunidade no Bolten e um novo agendamento no próprio registro. Um endpoint serverless (`/api/diagnostic-invite`) processa convites vencidos e envia a mensagem pela Evolution API. O `vercel.json` agenda esse endpoint a cada cinco minutos.
+A primeira etapa usa o cadastro existente em `contacts`, a criação de oportunidade no Bolten e um novo agendamento no próprio registro. Um endpoint serverless (`/api/diagnostic-invite`) processa convites vencidos e envia a mensagem pela Evolution API. O endpoint permanece disponível para disparo manual ou por um agendador externo autorizado, mas o site não mantém mais cron configurado no Vercel.
 
 A solução atual usa **WhatsApp**, porque é o canal já integrado ao repositório por meio da Evolution API. A ideia de Telegram pode ser adicionada depois trocando apenas o adaptador de mensageria e mantendo o mesmo estado do funil.
 
@@ -43,7 +43,7 @@ A solução atual usa **WhatsApp**, porque é o canal já integrado ao repositó
 
 O worker requer as variáveis server-side `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_EVOLUTION_API_URL`, `VITE_EVOLUTION_API_KEY` e `VITE_EVOLUTION_INSTANCE`. A chave `SUPABASE_SERVICE_ROLE_KEY` nunca deve ser exposta no frontend.
 
-Se o cron ainda não estiver habilitado no ambiente de deploy, o endpoint pode ser chamado por um agendador externo a cada cinco minutos. O importante é manter o processamento no servidor, e não em uma aba do navegador do usuário.
+O processamento automático pelo Vercel foi removido. Caso a operação queira retomar os convites atrasados, o endpoint poderá ser chamado por um agendador externo autorizado, usando `CRON_SECRET`, sem transferir a lógica para uma aba do navegador do usuário.
 
 ## Próximas melhorias
 

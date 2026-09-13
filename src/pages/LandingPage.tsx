@@ -32,10 +32,10 @@ const solutions = [
 ];
 
 const method = [
-  { number: '01', title: 'Diagnóstico', text: 'Entendemos o negócio, seus objetivos, gargalos e oportunidades.' },
-  { number: '02', title: 'Estratégia', text: 'Definimos o que realmente precisa ser feito — e o que deve esperar.' },
-  { number: '03', title: 'Implementação', text: 'Colocamos as soluções em funcionamento, com clareza e acompanhamento.' },
-  { number: '04', title: 'Acompanhamento', text: 'Ajustamos a implantação e avaliamos os sinais que aparecem no negócio.' },
+  { number: '01', title: 'Diagnóstico', text: 'Mapeamos o negócio, os objetivos e o gargalo que mais custa tempo ou oportunidade.' },
+  { number: '02', title: 'Estratégia', text: 'Escolhemos a próxima decisão e deixamos o restante para depois.' },
+  { number: '03', title: 'Implementação', text: 'Colocamos a solução em funcionamento e mostramos como ela entra na rotina.' },
+  { number: '04', title: 'Acompanhamento', text: 'Acompanhamos o uso, corrigimos o que travar e registramos o próximo avanço.' },
 ];
 
 const beforeAfter = [
@@ -64,6 +64,7 @@ function InstagramIcon() { return <svg width="17" height="17" viewBox="0 0 24 24
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
+  const [activeMethod, setActiveMethod] = useState('01');
   const [mobileMenu, setMobileMenu] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [formStatus, setFormStatus] = useState<FormStatus>('idle');
@@ -119,6 +120,16 @@ export default function LandingPage() {
     document.querySelectorAll('.reveal').forEach((element) => observer.observe(element)); return () => observer.disconnect();
   }, []);
   useEffect(() => {
+    const items = Array.from(document.querySelectorAll<HTMLElement>('.method-item[data-method]'));
+    if (!items.length) return undefined;
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible?.target instanceof HTMLElement) setActiveMethod(visible.target.dataset.method ?? '01');
+    }, { rootMargin: '-38% 0px -42% 0px', threshold: [0.2, 0.55, 0.8] });
+    items.forEach((item) => observer.observe(item));
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
     document.body.style.overflow = formOpen || mobileMenu ? 'hidden' : '';
     const onKey = (event: KeyboardEvent) => event.key === 'Escape' && (setFormOpen(false), setMobileMenu(false));
     document.addEventListener('keydown', onKey); return () => { document.body.style.overflow = ''; document.removeEventListener('keydown', onKey); };
@@ -162,7 +173,7 @@ export default function LandingPage() {
 
       <section id="solucoes" className="solutions section-new"><div className="container-new"><div className="section-heading section-heading--center reveal"><p className="eyebrow"><span /> Encontre a sua frente</p><h2>O que precisa mudar na sua empresa <em>hoje?</em></h2></div><div className="solutions-grid">{solutions.map(({ icon: Icon, title, items, accent }, index) => <article className={`solution-card solution-card--${accent} reveal`} key={title}><div className="solution-card__top"><span>0{index + 1}</span><Icon size={21} /></div><h3>{title}</h3><ul>{items.map((item) => <li key={item}>{item}</li>)}</ul><button onClick={openForm}>Conversar sobre isso <ArrowUpRight size={16} /></button></article>)}</div></div></section>
 
-      <section id="metodo" className="method section-new"><div className="container-new method__layout"><div className="section-heading reveal"><p className="eyebrow"><span /> O método Vertex</p><h2>Não começamos vendendo.<br /><em>Começamos entendendo.</em></h2><p>O diagnóstico existe para separar prioridade de distração e construir uma solução que faça sentido para o momento da empresa.</p></div><div className="method-list">{method.map((item) => <article className="method-item reveal" key={item.number}><span>{item.number}</span><div><h3>{item.title}</h3><p>{item.text}</p></div><ArrowUpRight size={17} /></article>)}</div></div></section>
+      <section id="metodo" className="method section-new"><div className="container-new method__layout"><div className="section-heading reveal"><p className="eyebrow"><span /> O método Vertex</p><h2>Primeiro entendemos.<br /><em>Depois colocamos de pé.</em></h2><p>O diagnóstico mostra onde a empresa está perdendo tempo ou oportunidade. A partir daí, cada decisão entra na ordem certa.</p><nav className="method-progress" aria-label="Etapas do método Vertex">{method.map((item) => <a key={item.number} className={activeMethod === item.number ? 'is-active' : ''} aria-current={activeMethod === item.number ? 'step' : undefined} href={`#metodo-${item.number}`}><span>{item.number}</span>{item.title}</a>)}</nav></div><div className="method-list">{method.map((item) => <article id={`metodo-${item.number}`} data-method={item.number} className={`method-item reveal ${activeMethod === item.number ? 'is-active' : ''}`} key={item.number}><span>{item.number}</span><div><h3>{item.title}</h3><p>{item.text}</p></div><ArrowUpRight size={17} /></article>)}</div></div></section>
 
       <section className="transformation section-new"><div className="container-new"><div className="section-heading section-heading--center reveal"><p className="eyebrow"><span /> A mudança possível</p><h2>Como fica a empresa <em>depois?</em></h2></div><div className="comparison reveal"><div className="comparison__head"><span>Antes</span><span>Depois</span></div>{beforeAfter.map(([before, after]) => <div className="comparison__row" key={before}><span>{before}</span><ChevronRight size={16} /><strong>{after}</strong></div>)}</div><p className="transformation__closing reveal">O objetivo não é tirar você da sua empresa.<br /><strong>É permitir que você escolha onde seu tempo realmente gera valor.</strong></p></div></section>
 

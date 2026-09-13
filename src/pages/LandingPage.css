@@ -92,3 +92,17 @@ html{scroll-behavior:smooth}
 
 .quiet-link--muted{color:#8b867b;max-width:265px;line-height:1.45;font-size:.69rem;cursor:default}
 .quiet-link--muted:hover{color:#b8aa8e}
+/* Method journey: a lightweight scroll narrative inspired by scroll-world, without video dependencies. */
+.method__layout{align-items:start}
+.method-progress{display:grid;gap:0;margin-top:42px;border-left:1px solid rgba(199,168,115,.28);padding:2px 0 2px 18px}
+.method-progress a{position:relative;display:flex;align-items:center;gap:11px;min-height:34px;color:#716d65;font-size:.67rem;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;transition:color .25s ease,transform .25s ease}
+.method-progress a:before{content:'';position:absolute;left:-22px;width:7px;height:7px;border:1px solid #75654c;background:#111;border-radius:50%;transition:background .25s ease,box-shadow .25s ease,transform .25s ease}
+.method-progress a span{color:#a78a5e;font-variant-numeric:tabular-nums;font-size:.6rem}
+.method-progress a:hover,.method-progress a.is-active{color:#e6ddce;transform:translateX(4px)}
+.method-progress a.is-active:before{background:#c7a873;box-shadow:0 0 0 5px rgba(199,168,115,.09);transform:scale(1.1)}
+.method-item{scroll-margin-top:120px;position:relative}
+.method-item.is-active{background:rgba(176,141,87,.075);padding-left:20px;border-left-color:rgba(199,168,115,.66)}
+.method-item.is-active>span{color:#e0bd7d}
+@media (max-width:900px){.method-progress{grid-template-columns:repeat(4,minmax(0,1fr));border-left:0;border-top:1px solid rgba(199,168,115,.28);padding:14px 0 0;gap:8px}.method-progress a{display:block;min-height:0;line-height:1.35;font-size:.57rem}.method-progress a:before{display:none}.method-progress a span{display:block;margin-bottom:4px}}
+@media (max-width:620px){.method-progress{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:12px}.method-item.is-active{padding-left:14px}}
+@media (prefers-reduced-motion:reduce){.method-progress a,.method-item{transition:none}}

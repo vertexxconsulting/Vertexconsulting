@@ -65,6 +65,7 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
   const [activeMethod, setActiveMethod] = useState('01');
+  const [activeSolution, setActiveSolution] = useState('01');
   const [mobileMenu, setMobileMenu] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [formStatus, setFormStatus] = useState<FormStatus>('idle');
@@ -130,6 +131,16 @@ export default function LandingPage() {
     return () => observer.disconnect();
   }, []);
   useEffect(() => {
+    const items = Array.from(document.querySelectorAll<HTMLElement>('.solution-card[data-solution]'));
+    if (!items.length) return undefined;
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible?.target instanceof HTMLElement) setActiveSolution(visible.target.dataset.solution ?? '01');
+    }, { rootMargin: '-36% 0px -44% 0px', threshold: [0.2, 0.55, 0.8] });
+    items.forEach((item) => observer.observe(item));
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
     document.body.style.overflow = formOpen || mobileMenu ? 'hidden' : '';
     const onKey = (event: KeyboardEvent) => event.key === 'Escape' && (setFormOpen(false), setMobileMenu(false));
     document.addEventListener('keydown', onKey); return () => { document.body.style.overflow = ''; document.removeEventListener('keydown', onKey); };
@@ -171,7 +182,7 @@ export default function LandingPage() {
 
       <section className="vertex-intro section-new"><div className="container-new vertex-intro__layout"><div className="section-heading reveal"><p className="eyebrow"><span /> A parceira estratégica</p><h2>Primeiro entendemos.<br /><em>Depois recomendamos.<br />Então implementamos.</em></h2></div><div className="vertex-intro__copy reveal reveal--delay"><p>A Vertex trabalha com sites, marketing, IA e organização da operação.</p><p>O trabalho começa pelo gargalo e conecta estratégia, tecnologia e pessoas à rotina da empresa.</p><div className="values"><span>Relacionamento próximo</span><span>Recomendações claras</span><span>Compromisso com prazos</span><span>Foco no que foi combinado</span></div></div></div></section>
 
-      <section id="solucoes" className="solutions section-new"><div className="container-new"><div className="section-heading section-heading--center reveal"><p className="eyebrow"><span /> Onde está o peso?</p><h2>O que precisa mudar na sua empresa <em>hoje?</em></h2></div><div className="solutions-grid">{solutions.map(({ icon: Icon, title, items, accent }, index) => <article className={`solution-card solution-card--${accent} reveal`} key={title}><div className="solution-card__top"><span>0{index + 1}</span><Icon size={21} /></div><h3>{title}</h3><ul>{items.map((item) => <li key={item}>{item}</li>)}</ul><button onClick={openForm}>Conversar sobre isso <ArrowUpRight size={16} /></button></article>)}</div></div></section>
+      <section id="solucoes" className="solutions section-new"><div className="container-new"><div className="section-heading section-heading--center reveal"><p className="eyebrow"><span /> Uma jornada possível</p><h2>Escolha a frente que está pesando <em>agora.</em></h2><p>Desça a página para ver como cada parte da operação pode ganhar ordem.</p></div><div className="solution-journey"><nav className="solution-journey__rail" aria-label="Frentes de trabalho">{solutions.map(({ title }, index) => <a key={title} className={activeSolution === `0${index + 1}` ? 'is-active' : ''} aria-current={activeSolution === `0${index + 1}` ? 'step' : undefined} href={`#solucao-0${index + 1}`}><span>0{index + 1}</span>{title}</a>)}</nav><div className="solutions-grid">{solutions.map(({ icon: Icon, title, items, accent }, index) => <article id={`solucao-0${index + 1}`} data-solution={`0${index + 1}`} className={`solution-card solution-card--${accent} reveal ${activeSolution === `0${index + 1}` ? 'is-active' : ''}`} key={title}><div className="solution-card__top"><span>0{index + 1}</span><Icon size={21} /></div><h3>{title}</h3><ul>{items.map((item) => <li key={item}>{item}</li>)}</ul><button onClick={openForm}>Conversar sobre isso <ArrowUpRight size={16} /></button></article>)}</div></div></div></section>
 
       <section id="metodo" className="method section-new"><div className="container-new method__layout"><div className="section-heading reveal"><p className="eyebrow"><span /> O método Vertex</p><h2>Primeiro entendemos.<br /><em>Depois colocamos de pé.</em></h2><p>O diagnóstico mostra onde a empresa está perdendo tempo ou oportunidade. A partir daí, cada decisão entra na ordem certa.</p><nav className="method-progress" aria-label="Etapas do método Vertex">{method.map((item) => <a key={item.number} className={activeMethod === item.number ? 'is-active' : ''} aria-current={activeMethod === item.number ? 'step' : undefined} href={`#metodo-${item.number}`}><span>{item.number}</span>{item.title}</a>)}</nav></div><div className="method-list">{method.map((item) => <article id={`metodo-${item.number}`} data-method={item.number} className={`method-item reveal ${activeMethod === item.number ? 'is-active' : ''}`} key={item.number}><span>{item.number}</span><div><h3>{item.title}</h3><p>{item.text}</p></div><ArrowUpRight size={17} /></article>)}</div></div></section>
 

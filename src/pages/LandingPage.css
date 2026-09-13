@@ -106,3 +106,17 @@ html{scroll-behavior:smooth}
 @media (max-width:900px){.method-progress{grid-template-columns:repeat(4,minmax(0,1fr));border-left:0;border-top:1px solid rgba(199,168,115,.28);padding:14px 0 0;gap:8px}.method-progress a{display:block;min-height:0;line-height:1.35;font-size:.57rem}.method-progress a:before{display:none}.method-progress a span{display:block;margin-bottom:4px}}
 @media (max-width:620px){.method-progress{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:12px}.method-item.is-active{padding-left:14px}}
 @media (prefers-reduced-motion:reduce){.method-progress a,.method-item{transition:none}}
+/* Solution journey: scroll changes the active scene while the rail keeps the route visible. */
+.solution-journey{display:grid;grid-template-columns:190px 1fr;gap:28px;align-items:start}
+.solution-journey__rail{position:sticky;top:112px;display:grid;gap:0;border-left:1px solid rgba(199,168,115,.28);padding:3px 0 3px 18px}
+.solution-journey__rail a{position:relative;display:flex;flex-direction:column;gap:3px;padding:10px 0;color:#716d65;font-size:.62rem;line-height:1.25;letter-spacing:.06em;text-decoration:none;text-transform:uppercase;transition:color .25s ease,transform .25s ease}
+.solution-journey__rail a:before{content:'';position:absolute;left:-22px;top:17px;width:7px;height:7px;border:1px solid #75654c;border-radius:50%;background:#0d0d0d;transition:background .25s ease,box-shadow .25s ease,transform .25s ease}
+.solution-journey__rail a span{color:#a78a5e;font-size:.58rem;font-variant-numeric:tabular-nums}
+.solution-journey__rail a:hover,.solution-journey__rail a.is-active{color:#e6ddce;transform:translateX(4px)}
+.solution-journey__rail a.is-active:before{background:#c7a873;box-shadow:0 0 0 5px rgba(199,168,115,.09);transform:scale(1.1)}
+.solution-journey .solutions-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.solution-journey .solution-card{scroll-margin-top:120px;min-height:360px}
+.solution-journey .solution-card.is-active{border-color:rgba(199,168,115,.72);background:linear-gradient(145deg,#1b1812,#151513);box-shadow:0 20px 55px rgba(0,0,0,.22);transform:translateY(-4px)}
+@media (max-width:900px){.solution-journey{grid-template-columns:1fr;gap:23px}.solution-journey__rail{position:sticky;z-index:3;top:72px;grid-template-columns:repeat(4,minmax(0,1fr));border-left:0;border-top:1px solid rgba(199,168,115,.28);padding:12px 0 0;gap:8px;background:rgba(13,13,13,.9);backdrop-filter:blur(12px)}.solution-journey__rail a{padding:0;min-height:42px;font-size:.54rem}.solution-journey__rail a:before{display:none}.solution-journey__rail a span{margin-bottom:2px}.solution-journey .solutions-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:620px){.solution-journey__rail{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:10px}.solution-journey .solutions-grid{grid-template-columns:1fr}.solution-journey .solution-card{min-height:320px}}
+@media (prefers-reduced-motion:reduce){.solution-journey__rail a,.solution-journey .solution-card{transition:none}}
